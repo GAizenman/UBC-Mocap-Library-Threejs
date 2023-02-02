@@ -53,7 +53,7 @@ function init() {
     // model
 
     const loader = new GLTFLoader();
-    loader.load( 'assets/gltf/RobotExpressive.glb', function ( gltf ) {
+    loader.load( '../assets/gltf/RobotExpressive.glb', function ( gltf ) {
 
         model = gltf.scene;
         scene.add( model );
