@@ -1,35 +1,26 @@
+import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import Stats from 'three/addons/libs/stats.module.js'
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
 
-import * as THREE from 'three';
-
-import Stats from 'three/addons/libs/stats.module.js';
-import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
-let container, stats, clock, gui, mixer, actions, activeAction, previousAction;
-let camera, scene, renderer, model, face;
-
-const api = { state: 'Walking' };
+let camera, scene, renderer, controls;
 
 init();
-animate();
 
 function init() {
-
-    container = document.createElement( 'div' );
-    document.body.appendChild( container );
-
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.25, 100 );
-    camera.position.set( - 5, 3, 10 );
-    camera.lookAt( 0, 2, 0 );
-
+    //scene
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xe0e0e0 );
-    scene.fog = new THREE.Fog( 0xe0e0e0, 20, 100 );
 
-    clock = new THREE.Clock();
+    //renderer
 
-    // lights
+    renderer = new THREE.WebGLRenderer()
+    renderer.shadowMap.enabled = true
+    // renderer.outputEncoding = THREE.sRGBEncoding
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    document.body.appendChild(renderer.domElement)
+    
+    // environment
 
     const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
     hemiLight.position.set( 0, 20, 0 );
@@ -39,182 +30,148 @@ function init() {
     dirLight.position.set( 0, 20, 10 );
     scene.add( dirLight );
 
-    // ground
-
-    const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
-    mesh.rotation.x = - Math.PI / 2;
-    scene.add( mesh );
+    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+    ground.rotation.x = - Math.PI / 2;
+    scene.add( ground );
 
     const grid = new THREE.GridHelper( 200, 40, 0x000000, 0x000000 );
     grid.material.opacity = 0.2;
     grid.material.transparent = true;
     scene.add( grid );
+    
+    scene.background = new THREE.Color( 0xe0e0e0 );
+    scene.fog = new THREE.Fog( 0xe0e0e0, 20, 100 );
+    
+    //camera
 
-    // model
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+    camera.position.y = 1.5
+    camera.position.z = 2.5
 
-    const loader = new GLTFLoader();
-    loader.load( '../assets/gltf/RobotExpressive.glb', function ( gltf ) {
+    //controls
 
-        model = gltf.scene;
-        scene.add( model );
-
-        createGUI( model, gltf.animations );
-
-    }, undefined, function ( e ) {
-
-        console.error( e );
-
-    } );
-
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
-    renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    container.appendChild( renderer.domElement );
-
-    window.addEventListener( 'resize', onWindowResize );
-
-    // stats
-    stats = new Stats();
-    container.appendChild( stats.dom );
-
+    controls = new OrbitControls(camera, renderer.domElement)
+    controls.enableDamping = true
+    controls.target.y = 1
 }
 
-function createGUI( model, animations ) {
+const animationClips = {}
 
-    const states = [ 'Idle', 'Walking', 'Running', 'Dance', 'Death', 'Sitting', 'Standing' ];
-    const emotes = [ 'Jump', 'Yes', 'No', 'Wave', 'Punch', 'ThumbsUp' ];
+let mixer
+let lastAction
 
-    gui = new GUI();
+// const totalBots = 2
+// let botsLoaded = 0
+let botsReady = false
 
-    mixer = new THREE.AnimationMixer( model );
+const gltfLoader = new GLTFLoader()
 
-    actions = {};
+gltfLoader.load(
+    '../assets/models/female_medical_model.glb',
+    (gltf) => {
+        mixer = new THREE.AnimationMixer(gltf.scene)
 
-    for ( let i = 0; i < animations.length; i ++ ) {
+        animationClips['default'] = gltf.animations[0]
+        lastAction = animationClips['default']
+        female_medical_folder.add(fem_medic_buttons, 'default')
 
-        const clip = animations[ i ];
-        const action = mixer.clipAction( clip );
-        actions[ clip.name ] = action;
+        gltf.scene.traverse(function (child) {
+            if (child.isMesh) {
+                const m = child
+                m.castShadow = true
+            }
+        })
 
-        if ( emotes.indexOf( clip.name ) >= 0 || states.indexOf( clip.name ) >= 4 ) {
+        //skeleton visualizer
+        // const helper = new THREE.SkeletonHelper(gltf.scene)
+        // scene.add(helper)
 
-            action.clampWhenFinished = true;
-            action.loop = THREE.LoopOnce;
-
+        scene.add(gltf.scene)
+        loadAnimations()
+    },
+    (xhr) => {
+        if (xhr.lengthComputable) {
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
         }
-
+    },
+    (error) => {
+        console.log(error)
     }
+)
 
-    // states
+function loadAnimations() {
+    //add an animation from another file
+    gltfLoader.load(
+        '../assets/animations/actionClip@administering_cpr.glb',
+        (gltf) => {
+            console.log('loaded administering_cpr')
+            animationClips['administering_cpr'] = gltf.animations[0]
 
-    const statesFolder = gui.addFolder( 'States' );
+            female_medical_folder.add(fem_medic_buttons, 'administering_cpr')
+            botsReady = true
 
-    const clipCtrl = statesFolder.add( api, 'state' ).options( states );
+            progressBar.style.display = 'none'
 
-    clipCtrl.onChange( function () {
-
-        fadeToAction( api.state, 0.5 );
-
-    } );
-
-    statesFolder.open();
-
-    // emotes
-
-    const emoteFolder = gui.addFolder( 'Emotes' );
-
-    function createEmoteCallback( name ) {
-
-        api[ name ] = function () {
-
-            fadeToAction( name, 0.2 );
-
-            mixer.addEventListener( 'finished', restoreState );
-
-        };
-
-        emoteFolder.add( api, name );
-
-    }
-
-    function restoreState() {
-
-        mixer.removeEventListener( 'finished', restoreState );
-
-        fadeToAction( api.state, 0.2 );
-
-    }
-
-    for ( let i = 0; i < emotes.length; i ++ ) {
-
-        createEmoteCallback( emotes[ i ] );
-
-    }
-
-    emoteFolder.open();
-
-    // expressions
-
-    face = model.getObjectByName( 'Head_4' );
-
-    const expressions = Object.keys( face.morphTargetDictionary );
-    const expressionFolder = gui.addFolder( 'Expressions' );
-
-    for ( let i = 0; i < expressions.length; i ++ ) {
-
-        expressionFolder.add( face.morphTargetInfluences, i, 0, 1, 0.01 ).name( expressions[ i ] );
-
-    }
-
-    activeAction = actions[ 'Walking' ];
-    activeAction.play();
-
-    expressionFolder.open();
-
+        },
+        (xhr) => {
+            if (xhr.lengthComputable) {
+                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+            }
+        },
+        (error) => {
+            console.log(error)
+        }
+    )
 }
 
-function fadeToAction( name, duration ) {
-
-    previousAction = activeAction;
-    activeAction = actions[ name ];
-
-    if ( previousAction !== activeAction ) {
-
-        previousAction.fadeOut( duration );
-
-    }
-
-    activeAction
-        .reset()
-        .setEffectiveTimeScale( 1 )
-        .setEffectiveWeight( 1 )
-        .fadeIn( duration )
-        .play();
-
-}
-
+window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
-
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    render()
 }
 
-//
+const fem_medic_buttons = {
+    default: function () {
+        mixer.clipAction(lastAction).fadeOut(0.5)
+        mixer.clipAction(animationClips['default']).reset().fadeIn(0.5).play()
+        lastAction = animationClips['default']
+    },
+    administering_cpr: function () {
+        mixer.clipAction(lastAction).fadeOut(0.5)
+        mixer.clipAction(animationClips['administering_cpr']).reset().fadeIn(0.5).play()
+        lastAction = animationClips['administering_cpr']
+    },
+}
+
+const gui = new GUI();
+const female_medical_folder = gui.addFolder('Female Medic'); 
+female_medical_folder.open();
+
+const stats = Stats();
+document.body.appendChild(stats.dom);
+
+const clock = new THREE.Clock();
+let delta = 0;
 
 function animate() {
+    requestAnimationFrame(animate);
 
-    const dt = clock.getDelta();
+    controls.update();
 
-    if ( mixer ) mixer.update( dt );
+    delta = clock.getDelta();
+    if (botsReady) {
+        mixer.update(delta);
+    }
 
-    requestAnimationFrame( animate );
-
-    renderer.render( scene, camera );
+    render();
 
     stats.update();
-
 }
+
+function render() {
+    renderer.render(scene, camera);
+}
+
+animate();
