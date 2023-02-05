@@ -4,6 +4,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import Stats from 'three/addons/libs/stats.module.js'
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
 
+import assets from './assets.json' assert { type: 'json' };
+console.log(assets);
+
 let camera, scene, renderer, controls;
 
 init();
@@ -16,7 +19,7 @@ function init() {
 
     renderer = new THREE.WebGLRenderer()
     renderer.shadowMap.enabled = true
-    // renderer.outputEncoding = THREE.sRGBEncoding
+    renderer.outputEncoding = THREE.sRGBEncoding
     renderer.setSize(window.innerWidth, window.innerHeight)
     document.body.appendChild(renderer.domElement)
     
@@ -53,6 +56,7 @@ function init() {
     controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.target.y = 1
+
 }
 
 const animationClips = {}
@@ -67,7 +71,7 @@ let botsReady = false
 const gltfLoader = new GLTFLoader()
 
 gltfLoader.load(
-    '../assets/models/female_medical_model.glb',
+    '../assets/models/' + assets[0].model,
     (gltf) => {
         mixer = new THREE.AnimationMixer(gltf.scene)
 
@@ -102,16 +106,13 @@ gltfLoader.load(
 function loadAnimations() {
     //add an animation from another file
     gltfLoader.load(
-        '../assets/animations/actionClip@administering_cpr.glb',
+        '../assets/animations/' + assets[0].animations[1],
         (gltf) => {
             console.log('loaded administering_cpr')
             animationClips['administering_cpr'] = gltf.animations[0]
 
             female_medical_folder.add(fem_medic_buttons, 'administering_cpr')
             botsReady = true
-
-            progressBar.style.display = 'none'
-
         },
         (xhr) => {
             if (xhr.lengthComputable) {
@@ -149,11 +150,17 @@ const gui = new GUI();
 const female_medical_folder = gui.addFolder('Female Medic'); 
 female_medical_folder.open();
 
+
+//stats
+    
 const stats = Stats();
 document.body.appendChild(stats.dom);
 
+//clock
+
 const clock = new THREE.Clock();
 let delta = 0;
+
 
 function animate() {
     requestAnimationFrame(animate);
