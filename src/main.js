@@ -8,7 +8,9 @@ import assets from './assets.json' assert { type: 'json' };
 console.log(assets);
 
 let camera, scene, renderer, controls;
-let mixer, lastAction, folder;
+let folder;
+let lastAction = [];
+let mixer = [];
 let botsReady = false
 const animationClips = {}
 init();
@@ -59,11 +61,7 @@ function init() {
     controls.enableDamping = true
     controls.target.y = 1
 
-    
-
-    // const totalBots = 2
-    // let botsLoaded = 0
-    
+    console.log(assets[0])
 
     const gltfLoader = new GLTFLoader()
     const gui = new GUI();
@@ -72,24 +70,27 @@ function init() {
 
     //models and animations are in seperate gltf files so they can be retargeted 
     for(let x = 0; x < assets.length; x++){
+        let clipName = 'default'
         gltfLoader.load(
             '../assets/models/' + assets[x].model,
             (gltf) => {
-                mixer = new THREE.AnimationMixer(gltf.scene);
-    
-                animationClips['default'] = gltf.animations[0];
-                lastAction = animationClips['default'];
+                mixer.push(new THREE.AnimationMixer(gltf.scene));
+
+                animationClips[clipName] = gltf.animations[0];
+                lastAction.push(animationClips[clipName]);
                 
                 folder = gui.addFolder(assets[x].name); 
                 folder.open();
                 
-                folder.add('default',
-                    function() {
-                        mixer.clipAction(lastAction).fadeOut(0.5)
-                        mixer.clipAction(animationClips['default']).reset().fadeIn(0.5).play()
-                        lastAction = animationClips['default']
-                    }
-                );
+                let button = {
+                    action: function() { 
+                        mixer[x].clipAction(lastAction[x]).fadeOut(0.5)
+                        mixer[x].clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
+                        lastAction[x] = animationClips[clipName] 
+                    },
+                
+                };
+                folder.add(button, 'action').name(clipName);
     
                 gltf.scene.traverse(function (child) {
                     if (child.isMesh) {
@@ -102,21 +103,23 @@ function init() {
                 
                 for(let y = 0; y < assets[x].animations.length; y++){
                     let clipName = assets[x].animations[y];
-                    
                     let clipPath = '../assets/animations/' + clipName;
+                    
                     gltfLoader.load(
                         clipPath,
                         (gltf) => {
                             console.log('loaded ' + clipName)
                             animationClips[clipName] = gltf.animations[0]
-                
-                            folder.add(clipName,
-                                function() {
-                                    mixer.clipAction(lastAction).fadeOut(0.5)
-                                    mixer.clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
-                                    lastAction = animationClips[clipName]
-                                }
-                            );
+                            
+                            let button = {
+                                action: function() { 
+                                    mixer[x].clipAction(lastAction[x]).fadeOut(0.5)
+                                    mixer[x].clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
+                                    lastAction[x] = animationClips[clipName] 
+                                },
+                            
+                            };
+                            folder.add(button, 'action').name(clipName);
                         },
                         (xhr) => {
                             if (xhr.lengthComputable) {
@@ -150,11 +153,6 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight)
     render()
 }
-function crossFade(clip) {
-    mixer.clipAction(lastAction).fadeOut(0.5)
-    mixer.clipAction(animationClips[clip]).reset().fadeIn(0.5).play()
-    lastAction = animationClips[clip]
-}
 
 //stats
     
@@ -175,7 +173,10 @@ function animate() {
     delta = clock.getDelta();
 
     if (botsReady) {
-        mixer.update(delta);
+        for(let j = 0; j < mixer.length; j++){
+            mixer[j].update(delta);
+        }
+        
     }
 
     render();
