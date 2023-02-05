@@ -1,7 +1,7 @@
 [
-    {
+    {   
+        "name": "Female Medic",
         "model" : "female_medical_model.glb",
-        "animations":   ["actionClip@administering_cpr.glb"],
-        "name": "Female Medic"
+        "animations":   [["actionClip@administering_cpr.glb","Administering CPR"]]
     }
 ]

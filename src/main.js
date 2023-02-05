@@ -4,14 +4,13 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import Stats from 'three/addons/libs/stats.module.js'
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
 
+// json that holds all of the asset information
 import assets from './assets.json' assert { type: 'json' };
-console.log(assets);
 
-let camera, scene, renderer, controls;
-let folder;
-let lastAction = [];
-let mixer = [];
-let botsReady = false
+let camera, scene, renderer, controls, folder;
+let lastActions = [];
+let mixers = [];
+let animationsReady = false
 const animationClips = {}
 init();
 
@@ -61,32 +60,29 @@ function init() {
     controls.enableDamping = true
     controls.target.y = 1
 
-    console.log(assets[0])
-
     const gltfLoader = new GLTFLoader()
     const gui = new GUI();
     
     //O(n^2) : make better?
-
     //models and animations are in seperate gltf files so they can be retargeted 
     for(let x = 0; x < assets.length; x++){
-        let clipName = 'default'
+        let clipName = 'None'
         gltfLoader.load(
             '../assets/models/' + assets[x].model,
             (gltf) => {
-                mixer.push(new THREE.AnimationMixer(gltf.scene));
+                mixers.push(new THREE.AnimationMixer(gltf.scene));
 
                 animationClips[clipName] = gltf.animations[0];
-                lastAction.push(animationClips[clipName]);
+                lastActions.push(animationClips[clipName]);
                 
                 folder = gui.addFolder(assets[x].name); 
                 folder.open();
                 
                 let button = {
                     action: function() { 
-                        mixer[x].clipAction(lastAction[x]).fadeOut(0.5)
-                        mixer[x].clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
-                        lastAction[x] = animationClips[clipName] 
+                        mixers[x].clipAction(lastActions[x]).fadeOut(0.5)
+                        mixers[x].clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
+                        lastActions[x] = animationClips[clipName] 
                     },
                 
                 };
@@ -102,48 +98,31 @@ function init() {
                 scene.add(gltf.scene);
                 
                 for(let y = 0; y < assets[x].animations.length; y++){
-                    let clipName = assets[x].animations[y];
-                    let clipPath = '../assets/animations/' + clipName;
-                    
+                    let clipFileName = assets[x].animations[y][0];
+                    let clipPath = '../assets/animations/' + clipFileName;
+                    let clipName = assets[x].animations[y][1];
+                
                     gltfLoader.load(
                         clipPath,
                         (gltf) => {
-                            console.log('loaded ' + clipName)
                             animationClips[clipName] = gltf.animations[0]
-                            
                             let button = {
                                 action: function() { 
-                                    mixer[x].clipAction(lastAction[x]).fadeOut(0.5)
-                                    mixer[x].clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
-                                    lastAction[x] = animationClips[clipName] 
+                                    mixers[x].clipAction(lastActions[x]).fadeOut(0.5)
+                                    mixers[x].clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
+                                    lastActions[x] = animationClips[clipName] 
                                 },
                             
                             };
                             folder.add(button, 'action').name(clipName);
-                        },
-                        (xhr) => {
-                            if (xhr.lengthComputable) {
-                                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' + clipName);
-                            }
-                        },
-                        (error) => {
-                            console.log(error)
                         }
                     )
                 }
-            },
-            (xhr) => {
-                if (xhr.lengthComputable) {
-                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-                }
-            },
-            (error) => {
-                console.log(error)
             }
         )
         
     }
-    botsReady = true;
+    animationsReady = true;
 }
 
 window.addEventListener('resize', onWindowResize, false)
@@ -172,13 +151,12 @@ function animate() {
 
     delta = clock.getDelta();
 
-    if (botsReady) {
-        for(let j = 0; j < mixer.length; j++){
-            mixer[j].update(delta);
+    if (animationsReady) {
+        for(let j = 0; j < mixers.length; j++){
+            mixers[j].update(delta);
         }
         
     }
-
     render();
 
     stats.update();
