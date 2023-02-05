@@ -8,7 +8,9 @@ import assets from './assets.json' assert { type: 'json' };
 console.log(assets);
 
 let camera, scene, renderer, controls;
-
+let mixer, lastAction, folder;
+let botsReady = false
+const animationClips = {}
 init();
 
 function init() {
@@ -57,72 +59,88 @@ function init() {
     controls.enableDamping = true
     controls.target.y = 1
 
-}
+    
 
-const animationClips = {}
+    // const totalBots = 2
+    // let botsLoaded = 0
+    
 
-let mixer
-let lastAction
+    const gltfLoader = new GLTFLoader()
+    const gui = new GUI();
+    
+    //O(n^2) : make better?
 
-// const totalBots = 2
-// let botsLoaded = 0
-let botsReady = false
+    //models and animations are in seperate gltf files so they can be retargeted 
+    for(let x = 0; x < assets.length; x++){
+        gltfLoader.load(
+            '../assets/models/' + assets[x].model,
+            (gltf) => {
+                mixer = new THREE.AnimationMixer(gltf.scene);
+    
+                animationClips['default'] = gltf.animations[0];
+                lastAction = animationClips['default'];
+                
+                folder = gui.addFolder(assets[x].name); 
+                folder.open();
+                
+                folder.add('default',
+                    function() {
+                        mixer.clipAction(lastAction).fadeOut(0.5)
+                        mixer.clipAction(animationClips['default']).reset().fadeIn(0.5).play()
+                        lastAction = animationClips['default']
+                    }
+                );
+    
+                gltf.scene.traverse(function (child) {
+                    if (child.isMesh) {
+                        const m = child
+                        m.castShadow = true
+                    }
+                })
 
-const gltfLoader = new GLTFLoader()
-
-gltfLoader.load(
-    '../assets/models/' + assets[0].model,
-    (gltf) => {
-        mixer = new THREE.AnimationMixer(gltf.scene)
-
-        animationClips['default'] = gltf.animations[0]
-        lastAction = animationClips['default']
-        female_medical_folder.add(fem_medic_buttons, 'default')
-
-        gltf.scene.traverse(function (child) {
-            if (child.isMesh) {
-                const m = child
-                m.castShadow = true
+                scene.add(gltf.scene);
+                
+                for(let y = 0; y < assets[x].animations.length; y++){
+                    let clipName = assets[x].animations[y];
+                    
+                    let clipPath = '../assets/animations/' + clipName;
+                    gltfLoader.load(
+                        clipPath,
+                        (gltf) => {
+                            console.log('loaded ' + clipName)
+                            animationClips[clipName] = gltf.animations[0]
+                
+                            folder.add(clipName,
+                                function() {
+                                    mixer.clipAction(lastAction).fadeOut(0.5)
+                                    mixer.clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
+                                    lastAction = animationClips[clipName]
+                                }
+                            );
+                        },
+                        (xhr) => {
+                            if (xhr.lengthComputable) {
+                                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' + clipName);
+                            }
+                        },
+                        (error) => {
+                            console.log(error)
+                        }
+                    )
+                }
+            },
+            (xhr) => {
+                if (xhr.lengthComputable) {
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                }
+            },
+            (error) => {
+                console.log(error)
             }
-        })
-
-        //skeleton visualizer
-        // const helper = new THREE.SkeletonHelper(gltf.scene)
-        // scene.add(helper)
-
-        scene.add(gltf.scene)
-        loadAnimations()
-    },
-    (xhr) => {
-        if (xhr.lengthComputable) {
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-        }
-    },
-    (error) => {
-        console.log(error)
+        )
+        
     }
-)
-
-function loadAnimations() {
-    //add an animation from another file
-    gltfLoader.load(
-        '../assets/animations/' + assets[0].animations[1],
-        (gltf) => {
-            console.log('loaded administering_cpr')
-            animationClips['administering_cpr'] = gltf.animations[0]
-
-            female_medical_folder.add(fem_medic_buttons, 'administering_cpr')
-            botsReady = true
-        },
-        (xhr) => {
-            if (xhr.lengthComputable) {
-                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-            }
-        },
-        (error) => {
-            console.log(error)
-        }
-    )
+    botsReady = true;
 }
 
 window.addEventListener('resize', onWindowResize, false)
@@ -132,24 +150,11 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight)
     render()
 }
-
-const fem_medic_buttons = {
-    default: function () {
-        mixer.clipAction(lastAction).fadeOut(0.5)
-        mixer.clipAction(animationClips['default']).reset().fadeIn(0.5).play()
-        lastAction = animationClips['default']
-    },
-    administering_cpr: function () {
-        mixer.clipAction(lastAction).fadeOut(0.5)
-        mixer.clipAction(animationClips['administering_cpr']).reset().fadeIn(0.5).play()
-        lastAction = animationClips['administering_cpr']
-    },
+function crossFade(clip) {
+    mixer.clipAction(lastAction).fadeOut(0.5)
+    mixer.clipAction(animationClips[clip]).reset().fadeIn(0.5).play()
+    lastAction = animationClips[clip]
 }
-
-const gui = new GUI();
-const female_medical_folder = gui.addFolder('Female Medic'); 
-female_medical_folder.open();
-
 
 //stats
     
@@ -168,6 +173,7 @@ function animate() {
     controls.update();
 
     delta = clock.getDelta();
+
     if (botsReady) {
         mixer.update(delta);
     }
