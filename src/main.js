@@ -7,11 +7,13 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
 // json that holds all of the asset information
 import assets from './assets.json' assert { type: 'json' };
 
-let camera, scene, renderer, controls, folder;
+let camera, scene, renderer, controls;
 let lastActions = [];
 let mixers = [];
 let animationsReady = false
 const animationClips = {}
+const gltfLoader = new GLTFLoader()
+const gui = new GUI();
 init();
 
 function init() {
@@ -59,71 +61,67 @@ function init() {
     controls = new OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.target.y = 1
-
-    const gltfLoader = new GLTFLoader()
-    const gui = new GUI();
-    
     //O(n^2) : make better?
     //models and animations are in seperate gltf files so they can be retargeted 
     for(let x = 0; x < assets.length; x++){
-        let clipName = 'None'
-        gltfLoader.load(
-            '../assets/models/' + assets[x].model,
-            (gltf) => {
-                mixers.push(new THREE.AnimationMixer(gltf.scene));
-
-                animationClips[clipName] = gltf.animations[0];
-                lastActions.push(animationClips[clipName]);
-                
-                folder = gui.addFolder(assets[x].name); 
-                folder.open();
-                
-                let button = {
-                    action: function() { 
-                        mixers[x].clipAction(lastActions[x]).fadeOut(0.5)
-                        mixers[x].clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
-                        lastActions[x] = animationClips[clipName] 
-                    },
-                
-                };
-                folder.add(button, 'action').name(clipName);
-    
-                gltf.scene.traverse(function (child) {
-                    if (child.isMesh) {
-                        const m = child
-                        m.castShadow = true
-                    }
-                })
-
-                scene.add(gltf.scene);
-                
-                for(let y = 0; y < assets[x].animations.length; y++){
-                    let clipFileName = assets[x].animations[y][0];
-                    let clipPath = '../assets/animations/' + clipFileName;
-                    let clipName = assets[x].animations[y][1];
-                
-                    gltfLoader.load(
-                        clipPath,
-                        (gltf) => {
-                            animationClips[clipName] = gltf.animations[0]
-                            let button = {
-                                action: function() { 
-                                    mixers[x].clipAction(lastActions[x]).fadeOut(0.5)
-                                    mixers[x].clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
-                                    lastActions[x] = animationClips[clipName] 
-                                },
-                            
-                            };
-                            folder.add(button, 'action').name(clipName);
-                        }
-                    )
-                }
-            }
-        )
-        
+        let asset = assets[x];
+        let folder = gui.addFolder(asset.name);
+        loadModel(asset, folder);
     }
     animationsReady = true;
 }
+function loadModel(asset, folder){
+    gltfLoader.load(
+        '../assets/models/' + asset.model,
+        (gltf) => {
+            let mixer = new THREE.AnimationMixer(gltf.scene);
+            mixers.push(mixer);
+
+            animationClips['None'] = gltf.animations[0];
+            let lastAction = animationClips['None'];
+            lastActions.push(lastAction);
+            
+            addAnimButton(mixer, lastAction, 'None', folder);
+
+            gltf.scene.traverse(function (child) {
+                if (child.isMesh) {
+                    const m = child
+                    m.castShadow = true
+                }
+            });
+
+            scene.add(gltf.scene);
+            loadAnimations(asset, folder, mixer, lastAction);
+        }
+    );
+}
+function loadAnimations(asset, folder, mixer, lastAction){
+    for(let y = 0; y < asset.animations.length; y++){
+        let clipFileName = asset.animations[y][0];
+        let clipPath = '../assets/animations/' + clipFileName;
+        let clipName = asset.animations[y][1];
+    
+        gltfLoader.load(
+            clipPath,
+            (gltf) => {
+                animationClips[clipName] = gltf.animations[0];
+                addAnimButton(mixer, lastAction, clipName, folder);
+            }
+        )
+    }
+}
+
+function addAnimButton(mixer, lastAction, clipName, folder){
+    let button = {
+        action: function() { 
+            mixer.clipAction(lastAction).fadeOut(0.5)
+            mixer.clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
+            lastAction = animationClips[clipName] 
+        },
+    };
+    folder.add(button, 'action').name(clipName);
+}
+
 
 window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
@@ -152,10 +150,7 @@ function animate() {
     delta = clock.getDelta();
 
     if (animationsReady) {
-        for(let j = 0; j < mixers.length; j++){
-            mixers[j].update(delta);
-        }
-        
+        for ( const mixer of mixers ) mixer.update( delta );
     }
     render();
 

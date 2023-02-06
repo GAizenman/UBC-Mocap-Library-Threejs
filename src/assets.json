@@ -3,5 +3,10 @@
         "name": "Female Medic",
         "model" : "female_medical_model.glb",
         "animations":   [["actionClip@administering_cpr.glb","Administering CPR"]]
+    },
+    {   
+        "name": "Male Medic",
+        "model" : "male_medical_model.glb",
+        "animations":   [["actionClip@administering_cpr.glb","Administering CPR"]]
     }
 ]
