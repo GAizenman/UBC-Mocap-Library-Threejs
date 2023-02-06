@@ -5,327 +5,143 @@ import Stats from 'three/addons/libs/stats.module.js'
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
 
 // json that holds all of the asset information
-import assets from './assets.json' assert { type: 'json' }
+import assets from './assets.json' assert { type: 'json' };
 
-let scene, renderer, camera, stats;
-let model, skeleton, mixer, clock;
-
-const crossFadeControls = [];
-
-let idleAction, walkAction, runAction;
-let idleWeight, walkWeight, runWeight;
-let actions, settings;
-
-let singleStepMode = false;
-let sizeOfNextStep = 0;
-
-const animationClips = {}
-
+let camera, scene, renderer, controls;
+let lastActions = [];
+let mixers = [];
+let animationsReady = false
+const actions = {}
+const gltfLoader = new GLTFLoader()
+const gui = new GUI();
+const duration = 3.5;
 init();
 
 function init() {
-
-    const container = document.getElementById( 'container' );
-
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000 );
-    camera.position.set( 1, 2, - 3 );
-    camera.lookAt( 0, 1, 0 );
-
-    clock = new THREE.Clock();
-
+    //scene
     scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xa0a0a0 );
-    scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
+
+    //renderer
+
+    renderer = new THREE.WebGLRenderer()
+    renderer.shadowMap.enabled = true
+    renderer.outputEncoding = THREE.sRGBEncoding
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    document.body.appendChild(renderer.domElement)
+    
+    // environment
 
     const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
     hemiLight.position.set( 0, 20, 0 );
     scene.add( hemiLight );
 
     const dirLight = new THREE.DirectionalLight( 0xffffff );
-    dirLight.position.set( - 3, 10, - 10 );
-    dirLight.castShadow = true;
-    dirLight.shadow.camera.top = 2;
-    dirLight.shadow.camera.bottom = - 2;
-    dirLight.shadow.camera.left = - 2;
-    dirLight.shadow.camera.right = 2;
-    dirLight.shadow.camera.near = 0.1;
-    dirLight.shadow.camera.far = 40;
+    dirLight.position.set( 0, 20, 10 );
     scene.add( dirLight );
 
-    // scene.add( new THREE.CameraHelper( dirLight.shadow.camera ) );
-
-    // ground
-
-    const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
-    mesh.rotation.x = - Math.PI / 2;
-    mesh.receiveShadow = true;
-    scene.add( mesh );
-
-    const loader = new GLTFLoader();
-    loader.load( 'assets/models/female_medical_model.glb', function ( gltf ) {
-
-        model = gltf.scene;
-        scene.add( model );
-
-        model.traverse( function ( object ) {
-
-            if ( object.isMesh ) object.castShadow = true;
-
-        } );
-
-        //
-
-        skeleton = new THREE.SkeletonHelper( model );
-        skeleton.visible = false;
-        scene.add( skeleton );
-
-        //
-
-        createPanel();
-
-        mixer = new THREE.AnimationMixer( model );
-        
-        //
-        for(let y = 0; y < assets[0].animations.length; y++){
-            let clipFileName = assets[0].animations[y][0];
-            let clipPath = '../assets/animations/' + clipFileName;
-            let clipName = assets.animations[y][1];
-        
-            gltfLoader.load(
-                clipPath,
-                (gltf) => {
-                    animationClips[clipName] = gltf.animations[0];
-                    addAnimButton(mixer, lastAction, clipName, folder);
-                }
-            )
-        }
-        const animations = gltf.animations;
-
-        idleAction = mixer.clipAction( animations[ 0 ] );
-        walkAction = mixer.clipAction( animations[ 3 ] );
-        runAction = mixer.clipAction( animations[ 1 ] );
-
-        actions = [ idleAction, walkAction, runAction ];
-
-        activateAllActions();
-
-        animate();
-
-    } );
-
-    renderer = new THREE.WebGLRenderer( { antialias: true } );
-    renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    renderer.outputEncoding = THREE.sRGBEncoding;
-    renderer.shadowMap.enabled = true;
-    container.appendChild( renderer.domElement );
-
-    stats = new Stats();
-    container.appendChild( stats.dom );
-
-    window.addEventListener( 'resize', onWindowResize );
-
-}
-
-function createPanel() {
-
-    const panel = new GUI( { width: 310 } );
-
-    const folder1 = panel.addFolder( 'Visibility' );
-    const folder2 = panel.addFolder( 'Activation/Deactivation' );
-    const folder3 = panel.addFolder( 'Pausing/Stepping' );
-    const folder4 = panel.addFolder( 'Crossfading' );
-    const folder5 = panel.addFolder( 'Blend Weights' );
-    const folder6 = panel.addFolder( 'General Speed' );
-
-    settings = {
-        'show model': true,
-        'show skeleton': false,
-        'deactivate all': deactivateAllActions,
-        'activate all': activateAllActions,
-        'pause/continue': pauseContinue,
-        'make single step': toSingleStepMode,
-        'modify step size': 0.05,
-        'from walk to idle': function () {
-
-            prepareCrossFade( walkAction, idleAction, 1.0 );
-
-        },
-        'from idle to walk': function () {
-
-            prepareCrossFade( idleAction, walkAction, 0.5 );
-
-        },
-        'from walk to run': function () {
-
-            prepareCrossFade( walkAction, runAction, 2.5 );
-
-        },
-        'from run to walk': function () {
-
-            prepareCrossFade( runAction, walkAction, 5.0 );
-
-        },
-        'use default duration': true,
-        'set custom duration': 3.5,
-        'modify idle weight': 0.0,
-        'modify walk weight': 1.0,
-        'modify run weight': 0.0,
-        'modify time scale': 1.0
-    };
-
-    folder1.add( settings, 'show model' ).onChange( showModel );
-    folder1.add( settings, 'show skeleton' ).onChange( showSkeleton );
-    folder2.add( settings, 'deactivate all' );
-    folder2.add( settings, 'activate all' );
-    folder3.add( settings, 'pause/continue' );
-    folder3.add( settings, 'make single step' );
-    folder3.add( settings, 'modify step size', 0.01, 0.1, 0.001 );
-    crossFadeControls.push( folder4.add( settings, 'from walk to idle' ) );
-    crossFadeControls.push( folder4.add( settings, 'from idle to walk' ) );
-    crossFadeControls.push( folder4.add( settings, 'from walk to run' ) );
-    crossFadeControls.push( folder4.add( settings, 'from run to walk' ) );
-    folder4.add( settings, 'use default duration' );
-    folder4.add( settings, 'set custom duration', 0, 10, 0.01 );
-    folder5.add( settings, 'modify idle weight', 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
-
-        setWeight( idleAction, weight );
-
-    } );
-    folder5.add( settings, 'modify walk weight', 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
-
-        setWeight( walkAction, weight );
-
-    } );
-    folder5.add( settings, 'modify run weight', 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
-
-        setWeight( runAction, weight );
-
-    } );
-    folder6.add( settings, 'modify time scale', 0.0, 1.5, 0.01 ).onChange( modifyTimeScale );
-
-    folder1.open();
-    folder2.open();
-    folder3.open();
-    folder4.open();
-    folder5.open();
-    folder6.open();
-
-}
-
-
-function showModel( visibility ) {
-
-    model.visible = visibility;
-
-}
-
-
-function showSkeleton( visibility ) {
-
-    skeleton.visible = visibility;
-
-}
-
-
-function modifyTimeScale( speed ) {
-
-    mixer.timeScale = speed;
-
-}
-
-
-function deactivateAllActions() {
-
-    actions.forEach( function ( action ) {
-
-        action.stop();
-
-    } );
-
-}
-
-function activateAllActions() {
-
-    setWeight( idleAction, settings[ 'modify idle weight' ] );
-    setWeight( walkAction, settings[ 'modify walk weight' ] );
-    setWeight( runAction, settings[ 'modify run weight' ] );
-
-    actions.forEach( function ( action ) {
-
-        action.play();
-
-    } );
-
-}
-
-function pauseContinue() {
-
-    if ( singleStepMode ) {
-
-        singleStepMode = false;
-        unPauseAllActions();
-
-    } else {
-
-        if ( idleAction.paused ) {
-
-            unPauseAllActions();
-
-        } else {
-
-            pauseAllActions();
-
-        }
-
+    const ground = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+    ground.rotation.x = - Math.PI / 2;
+    scene.add( ground );
+
+    const grid = new THREE.GridHelper( 200, 40, 0x000000, 0x000000 );
+    grid.material.opacity = 0.2;
+    grid.material.transparent = true;
+    scene.add( grid );
+    
+    scene.background = new THREE.Color( 0xe0e0e0 );
+    scene.fog = new THREE.Fog( 0xe0e0e0, 20, 100 );
+    
+    //camera
+
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+    camera.position.y = 1.5
+    camera.position.z = 2.5
+
+    //controls
+
+    controls = new OrbitControls(camera, renderer.domElement)
+    controls.enableDamping = true
+    controls.target.y = 1
+    //O(n^2) : make better?
+    //models and animations are in seperate gltf files so they can be retargeted 
+    for(let x = 0; x < assets.length; x++){
+        let asset = assets[x];
+        let folder = gui.addFolder(asset.name);
+        loadModel(asset, folder);
     }
+    animationsReady = true;
+}
+function activateAllActions(actions) {
+
+    
 
 }
+function loadModel(asset, folder){
+    gltfLoader.load(
+        '../assets/models/' + asset.model,
+        (gltf) => {
+            let mixer = new THREE.AnimationMixer(gltf.scene);
+            mixers.push(mixer);
 
-function pauseAllActions() {
+            actions['None'] = gltf.animations[0];
+            let lastAction = actions['None'];
+            lastActions.push(lastAction);
+            
+            addAnimButton(mixer, lastAction, 'None', folder);
 
-    actions.forEach( function ( action ) {
+            gltf.scene.traverse(function (child) {
+                if (child.isMesh) {
+                    const m = child
+                    m.castShadow = true
+                }
+            });
 
-        action.paused = true;
-
-    } );
-
+            scene.add(gltf.scene);
+            loadAnimations(asset, folder, mixer, lastAction);
+        }
+    );
+}
+function loadAnimations(asset, folder, mixer, lastAction){
+    for(let y = 0; y < asset.animations.length; y++){
+        let clipFileName = asset.animations[y][0];
+        let clipPath = '../assets/animations/' + clipFileName;
+        let clipName = asset.animations[y][1];
+    
+        gltfLoader.load(
+            clipPath,
+            (gltf) => {
+                actions[clipName] = gltf.animations[0];
+                actions[clipName].play();
+                addAnimButton(mixer, lastAction, clipName, folder);
+            }
+        )
+    }
 }
 
-function unPauseAllActions() {
+function addAnimButton(mixer, lastAction, clipName, folder){
+    let button = {
+        action: function() {
+            let nextAction = mixer.clipAction(actions[clipName]);
+            prepareCrossFade(mixer, lastAction, nextAction, duration );
 
-    actions.forEach( function ( action ) {
-
-        action.paused = false;
-
-    } );
-
+            // mixer.clipAction(actions[clipName]).reset().fadeIn(0.5).play()
+            lastAction = actions[clipName];
+        },
+    };
+    folder.add(button, 'action').name(clipName);
 }
+function prepareCrossFade( mixer, startAction, endAction, defaultDuration ) {
 
-function toSingleStepMode() {
-
-    unPauseAllActions();
-
-    singleStepMode = true;
-    sizeOfNextStep = settings[ 'modify step size' ];
-
-}
-
-function prepareCrossFade( startAction, endAction, defaultDuration ) {
-
-    // Switch default / custom crossfade duration (according to the user's choice)
-
-    const duration = setCrossFadeDuration( defaultDuration );
 
     // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
 
-    singleStepMode = false;
-    unPauseAllActions();
+    // singleStepMode = false;
+    // unPauseAllActions();
 
     // If the current action is 'idle' (duration 4 sec), execute the crossfade immediately;
     // else wait until the current action has finished its current loop
 
-    if ( startAction === idleAction ) {
+    if ( startAction === actions['None'] ) {
 
         executeCrossFade( startAction, endAction, duration );
 
@@ -337,23 +153,8 @@ function prepareCrossFade( startAction, endAction, defaultDuration ) {
 
 }
 
-function setCrossFadeDuration( defaultDuration ) {
 
-    // Switch default crossfade duration <-> custom crossfade duration
-
-    if ( settings[ 'use default duration' ] ) {
-
-        return defaultDuration;
-
-    } else {
-
-        return settings[ 'set custom duration' ];
-
-    }
-
-}
-
-function synchronizeCrossFade( startAction, endAction, duration ) {
+function synchronizeCrossFade( mixer, startAction, endAction, duration ) {
 
     mixer.addEventListener( 'loop', onLoopFinished );
 
@@ -396,95 +197,43 @@ function setWeight( action, weight ) {
 
 }
 
-// Called by the render loop
 
-function updateWeightSliders() {
-
-    settings[ 'modify idle weight' ] = idleWeight;
-    settings[ 'modify walk weight' ] = walkWeight;
-    settings[ 'modify run weight' ] = runWeight;
-
-}
-
-// Called by the render loop
-
-function updateCrossFadeControls() {
-
-    if ( idleWeight === 1 && walkWeight === 0 && runWeight === 0 ) {
-
-        crossFadeControls[ 0 ].disable();
-        crossFadeControls[ 1 ].enable();
-        crossFadeControls[ 2 ].disable();
-        crossFadeControls[ 3 ].disable();
-
-    }
-
-    if ( idleWeight === 0 && walkWeight === 1 && runWeight === 0 ) {
-
-        crossFadeControls[ 0 ].enable();
-        crossFadeControls[ 1 ].disable();
-        crossFadeControls[ 2 ].enable();
-        crossFadeControls[ 3 ].disable();
-
-    }
-
-    if ( idleWeight === 0 && walkWeight === 0 && runWeight === 1 ) {
-
-        crossFadeControls[ 0 ].disable();
-        crossFadeControls[ 1 ].disable();
-        crossFadeControls[ 2 ].disable();
-        crossFadeControls[ 3 ].enable();
-
-    }
-
-}
-
+window.addEventListener('resize', onWindowResize, false)
 function onWindowResize() {
-
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
-
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    render()
 }
+
+//stats
+    
+const stats = Stats();
+document.body.appendChild(stats.dom);
+
+//clock
+
+const clock = new THREE.Clock();
+let delta = 0;
+
 
 function animate() {
+    requestAnimationFrame(animate);
 
-    // Render loop
+    controls.update();
 
-    requestAnimationFrame( animate );
+    delta = clock.getDelta();
 
-    idleWeight = idleAction.getEffectiveWeight();
-    walkWeight = walkAction.getEffectiveWeight();
-    runWeight = runAction.getEffectiveWeight();
-
-    // Update the panel values if weights are modified from "outside" (by crossfadings)
-
-    updateWeightSliders();
-
-    // Enable/disable crossfade controls according to current weight values
-
-    updateCrossFadeControls();
-
-    // Get the time elapsed since the last frame, used for mixer update (if not in single step mode)
-
-    let mixerUpdateDelta = clock.getDelta();
-
-    // If in single step mode, make one step and then do nothing (until the user clicks again)
-
-    if ( singleStepMode ) {
-
-        mixerUpdateDelta = sizeOfNextStep;
-        sizeOfNextStep = 0;
-
+    if (animationsReady) {
+        for ( const mixer of mixers ) mixer.update( delta );
     }
-
-    // Update the animation mixer, the stats panel, and render this frame
-
-    mixer.update( mixerUpdateDelta );
+    render();
 
     stats.update();
-
-    renderer.render( scene, camera );
-
 }
+
+function render() {
+    renderer.render(scene, camera);
+}
+
+animate();

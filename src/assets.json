@@ -1,12 +1,7 @@
 [
     {   
         "name": "Female Medic",
-        "model" : "female_medical_model.glb",
-        "animations":   [["actionClip@idle.glb","Idle"],["actionClip@administering_cpr.glb","Administering CPR"], ["actionClip@dying.glb","Dying"]]
-    },
-    {   
-        "name": "Male Medic",
-        "model" : "male_medical_model.glb",
-        "animations":   [["actionClip@administering_cpr.glb","Administering CPR"]]
+        "modelPath" : "../assets/models/female_medical_model.glb",
+        "animationList":   [["../assets/animations/actionClip@idle.glb","Idle"],["../assets/animations/actionClip@administering_cpr.glb","Administering CPR"], ["../assets/animations/actionClip@dying.glb","Dying"]]
     }
 ]
