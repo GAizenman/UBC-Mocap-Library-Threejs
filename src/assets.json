@@ -2,7 +2,7 @@
     {   
         "name": "Female Medic",
         "model" : "female_medical_model.glb",
-        "animations":   [["actionClip@administering_cpr.glb","Administering CPR"]]
+        "animations":   [["actionClip@idle.glb","Idle"],["actionClip@administering_cpr.glb","Administering CPR"], ["actionClip@dying.glb","Dying"]]
     },
     {   
         "name": "Male Medic",
