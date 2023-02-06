@@ -14,6 +14,7 @@ let animationsReady = false
 const animationClips = {}
 const gltfLoader = new GLTFLoader()
 const gui = new GUI();
+const duration = 3.5;
 init();
 
 function init() {
@@ -113,10 +114,19 @@ function loadAnimations(asset, folder, mixer, lastAction){
 
 function addAnimButton(mixer, lastAction, clipName, folder){
     let button = {
-        action: function() { 
-            mixer.clipAction(lastAction).fadeOut(0.5)
-            mixer.clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
-            lastAction = animationClips[clipName] 
+        action: function() {
+            let nextAction = mixer.clipAction(animationClips[clipName]);
+            
+            nextAction.enabled = true;
+            nextAction.setEffectiveTimeScale( 1 );
+            nextAction.setEffectiveWeight( 1 );
+            nextAction.time = 0;
+            
+            let currAction = mixer.clipAction(lastAction);
+            nextAction = mixer.clipAction(animationClips[clipName]);
+            currAction.crossFadeTo(nextAction, duration, false);
+            // mixer.clipAction(animationClips[clipName]).reset().fadeIn(0.5).play()
+            lastAction = animationClips[clipName];
         },
     };
     folder.add(button, 'action').name(clipName);
