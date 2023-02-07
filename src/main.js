@@ -15,8 +15,9 @@ const weightControls = [];
 const actions = [];
 const weights = [];
 
-let idleAction, walkAction, runAction;
-let idleWeight, walkWeight, runWeight;
+let animations = {};
+// let idleAction, walkAction, runAction;
+// let idleWeight, walkWeight, runWeight;
 let defaultAction, defaultWeight;
 let settings;
 
@@ -93,9 +94,16 @@ function init() {
                 //
 
                 defaultAction = mixer.clipAction( gltf.animations[0] );
-                actions.push(defaultAction);
-                weights.push(1.0);
+                // actions.push(defaultAction);
+                // weights.push(1.0);
+
                 lastAction = defaultAction;
+                
+                
+                animations["default"]["action"] = defaultAction;
+                animations["default"]["weight"] = 1.0;
+                
+
                 asset.animationList.forEach(function(a){
                     loader.load(
                         a.path,
@@ -105,30 +113,6 @@ function init() {
                         }
                     )
                 })
-                // for(let anim = 0; asset.animationList.length; anim++){
-                //     let clipPath, actionName = "";
-                //     clipPath = asset.animationList[anim].path;
-                //     actionName = asset.animationList[anim].name;
-                //     loader.load(
-                //         clipPath,
-                //         (gltf) => {
-                //             let action = mixer.clipAction( gltf.animations[0] );
-                //             addDynamicButtons(action, actionName);
-                //         },
-                //         // called while loading is progressing
-                //         function ( xhr ) {
-                    
-                //             console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-                    
-                //         },
-                //         // called when loading has errors
-                //         function ( error ) {
-                    
-                //             console.log( 'An error happened' );
-                    
-                //         }
-                //     )
-                // }
                 activateAllActions();
 
                 animate();
@@ -161,17 +145,28 @@ function addDynamicButtons(nextAction, actionName){
         },
         'modify action weight': 0.0,
     };
-    crossFadeControls.push(folder4.add(dynamicButtons, 'crossFadeCTRL').name(actionName));
-    
-    weightControls.push(folder5.add( dynamicButtons, 'modify action weight', 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
+    animations[actionName] = {};
+    animations[actionName]["action"] = nextAction;
+    animations[actionName]["weight"] = 0.0;
+    animations[actionName]["crossFadeControl"] = folder4.add(dynamicButtons, 'crossFadeCTRL').name(actionName);
+    animations[actionName]["weightControl"] = folder5.add( dynamicButtons, 'modify action weight', 0.0, 1.0, 0.01 ).listen().onChange( 
+        function ( weight ) {
 
-        setWeight( nextAction, weight );
+            setWeight( nextAction, weight );
 
-    } ).name('modify '+ actionName + ' weight'));
+        } ).name('modify '+ actionName + ' weight');
+
+    // crossFadeControls.push(folder4.add(dynamicButtons, 'crossFadeCTRL').name(actionName));
     
-    actions.push(nextAction);
+    // weightControls.push(folder5.add( dynamicButtons, 'modify action weight', 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
+
+    //     setWeight( nextAction, weight );
+
+    // } ).name('modify '+ actionName + ' weight'));
+    
+    // actions.push(nextAction);
+    // weights.push(0.0);
     setWeight( nextAction, 0.0 );
-    weights.push(0.0);
 }
 
 function createPanel() {
@@ -228,13 +223,23 @@ function createPanel() {
     folder3.add( settings, 'modify step size', 0.01, 0.1, 0.001 );
     folder4.add( settings, 'use default duration' );
     folder4.add( settings, 'set custom duration', 0, 10, 0.01 );
-    crossFadeControls.push( folder4.add( settings, 'Default' ) );
-    folder5.add( settings, 'modify default weight', 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
+    
+    // crossFadeControls.push( folder4.add( settings, 'Default' ) );
+    
+    // folder5.add( settings, 'modify default weight', 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
+
+    //     setWeight( defaultAction, weight );
+
+    // } );
+
+    folder6.add( settings, 'modify time scale', 0.0, 1.5, 0.01 ).onChange( modifyTimeScale );
+    animations["default"] = {};
+    animations["default"]["crossFadeControl"] = folder4.add( settings, 'Default' ) ;
+    animations["default"]["weightControl"] = folder5.add( settings, 'modify default weight', 0.0, 1.0, 0.01 ).listen().onChange( function ( weight ) {
 
         setWeight( defaultAction, weight );
 
-    } );
-    folder6.add( settings, 'modify time scale', 0.0, 1.5, 0.01 ).onChange( modifyTimeScale );
+    });
 
     folder1.open();
     folder2.open();
@@ -268,29 +273,33 @@ function modifyTimeScale( speed ) {
 
 
 function deactivateAllActions() {
+    // actions.forEach( function ( action ) {
 
-    actions.forEach( function ( action ) {
+    //     action.stop();
 
-        action.stop();
+    // } );
+
+    Object.keys(animations).forEach( function ( a ) {
+
+        animations[a]["action"].stop();
 
     } );
+    
 
 }
 
 function activateAllActions() {
-
-    // setWeight( idleAction, settings[ 'modify idle weight' ] );
-    // setWeight( walkAction, settings[ 'modify walk weight' ] );
-    // setWeight( runAction, settings[ 'modify run weight' ] );
-    // actions.forEach( function ( action ) {
-    //     action.play();
-
-    // } );
     
-    for(let y = 0; y < actions.length; y++){
-        setWeight(actions[y], weightControls[y])
-        actions[y].play();
-    };
+    // for(let y = 0; y < actions.length; y++){
+    //     setWeight(actions[y], weightControls[y])
+    //     actions[y].play();
+    // };
+    Object.keys(animations).forEach( function ( a ) {
+        
+        setWeight(animations[a]["action"], animations[a]["weight"]);
+        animations[a]["action"].play();
+        
+    } );
    
 
 }
@@ -320,9 +329,14 @@ function pauseContinue() {
 
 function pauseAllActions() {
 
-    actions.forEach( function ( action ) {
+    // actions.forEach( function ( action ) {
 
-        action.paused = true;
+    //     action.paused = true;
+
+    // } );
+    Object.keys(animations).forEach( function ( a ) {
+
+        animations[a]["action"].paused = true;
 
     } );
 
@@ -330,9 +344,14 @@ function pauseAllActions() {
 
 function unPauseAllActions() {
 
-    actions.forEach( function ( action ) {
+    // actions.forEach( function ( action ) {
 
-        action.paused = false;
+    //     action.paused = false;
+
+    // } );
+    Object.keys(animations).forEach( function ( a ) {
+
+        animations[a]["action"].paused = false;
 
     } );
 
@@ -431,14 +450,20 @@ function setWeight( action, weight ) {
     action.setEffectiveWeight( weight );
 
 
+
 }
 
 // Called by the render loop
 
 function updateWeightSliders() {
-    for(let w = 0; w < weights.length; w++){
-        weightControls[w] = weights[w];
-    }
+    // for(let w = 0; w < weights.length; w++){
+    //     weightControls[w] = weights[w];
+    // }
+    Object.keys(animations).forEach( function ( a ) {
+
+        animations[a]["weightControl"] = animations[a]["weight"];
+
+    } );
     // settings[ 'modify idle weight' ] = idleWeight;
     // settings[ 'modify walk weight' ] = walkWeight;
     // settings[ 'modify run weight' ] = runWeight;
@@ -493,9 +518,14 @@ function animate() {
 
     requestAnimationFrame( animate );
 
-    for(let x = 0; x < actions.length; x++){
-        weights[x] = actions[x].getEffectiveWeight();
-    }
+    // for(let x = 0; x < actions.length; x++){
+    //     weights[x] = actions[x].getEffectiveWeight();
+    // }
+    Object.keys(animations).forEach( function ( a ) {
+
+        animations[a]["weight"] = animations[a]["action"].getEffectiveWeight();
+
+    } );
     // idleWeight = idleAction.getEffectiveWeight();
     // walkWeight = walkAction.getEffectiveWeight();
     // runWeight = runAction.getEffectiveWeight();
