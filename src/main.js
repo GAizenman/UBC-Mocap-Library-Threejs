@@ -33,8 +33,7 @@ function init() {
     // const container = document.getElementById( 'container' );
 
     camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 1000 );
-    camera.position.set( 1, 2, - 3 );
-    camera.lookAt( 0, 1, 0 );
+    camera.position.set(0.06, 2 ,4);
 
     clock = new THREE.Clock();
 
@@ -431,6 +430,7 @@ function setWeight( action, weight ) {
     action.setEffectiveTimeScale( 1 );
     action.setEffectiveWeight( weight );
 
+
 }
 
 // Called by the render loop
@@ -528,6 +528,7 @@ function animate() {
     stats.update();
 
     controls.update();
+    
 
     renderer.render( scene, camera );
 
