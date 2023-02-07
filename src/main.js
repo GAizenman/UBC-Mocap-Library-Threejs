@@ -7,7 +7,7 @@ import { GUI } from 'three/addons/libs/lil-gui.module.min.js'
 // json that holds all of the asset information
 import assets from './assets.json' assert { type: 'json' }
 
-let scene, renderer, camera, stats;
+let scene, renderer, camera, stats, controls;
 let model, skeleton, mixer, clock;
 
 const crossFadeControls = [];
@@ -24,6 +24,7 @@ let singleStepMode = false;
 let sizeOfNextStep = 0;
 let lastAction;
 let folder4, folder5;
+
 
 init();
 
@@ -96,17 +97,39 @@ function init() {
                 actions.push(defaultAction);
                 weights.push(1.0);
                 lastAction = defaultAction;
-                for(let anim = 0; asset.animationList.length; anim++){
-                    let clipPath = asset.animationList[anim][0];
-                    let actionName = asset.animationList[anim][1];
+                asset.animationList.forEach(function(a){
                     loader.load(
-                        clipPath,
+                        a.path,
                         (gltf) => {
                             let action = mixer.clipAction( gltf.animations[0] );
-                            addDynamicButtons(action, actionName);
+                            addDynamicButtons(action, a.name);
                         }
                     )
-                }
+                })
+                // for(let anim = 0; asset.animationList.length; anim++){
+                //     let clipPath, actionName = "";
+                //     clipPath = asset.animationList[anim].path;
+                //     actionName = asset.animationList[anim].name;
+                //     loader.load(
+                //         clipPath,
+                //         (gltf) => {
+                //             let action = mixer.clipAction( gltf.animations[0] );
+                //             addDynamicButtons(action, actionName);
+                //         },
+                //         // called while loading is progressing
+                //         function ( xhr ) {
+                    
+                //             console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                    
+                //         },
+                //         // called when loading has errors
+                //         function ( error ) {
+                    
+                //             console.log( 'An error happened' );
+                    
+                //         }
+                //     )
+                // }
                 activateAllActions();
 
                 animate();
@@ -124,10 +147,13 @@ function init() {
 
     stats = new Stats();
     document.body.appendChild( stats.dom );
+    
+    controls = new OrbitControls( camera, renderer.domElement );
 
     window.addEventListener( 'resize', onWindowResize );
 
 }
+
 function addDynamicButtons(nextAction, actionName){
     let dynamicButtons = {
         'crossFadeCTRL': function() {
@@ -145,6 +171,7 @@ function addDynamicButtons(nextAction, actionName){
     } ).name('modify '+ actionName + ' weight'));
     
     actions.push(nextAction);
+    setWeight( nextAction, 0.0 );
     weights.push(0.0);
 }
 
@@ -499,6 +526,8 @@ function animate() {
     mixer.update( mixerUpdateDelta );
 
     stats.update();
+
+    controls.update();
 
     renderer.render( scene, camera );
 

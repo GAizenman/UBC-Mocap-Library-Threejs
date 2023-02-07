@@ -2,6 +2,14 @@
     {   
         "name": "Female Medic",
         "modelPath" : "../assets/models/female_medical_model.glb",
-        "animationList":   [["../assets/animations/actionClip@idle.glb","Idle"],["../assets/animations/actionClip@administering_cpr.glb","Administering CPR"], ["../assets/animations/actionClip@dying.glb","Dying"]]
+        "animationList":   [{   
+                                "path" : "../assets/animations/actionClip@idle.glb",
+                                "name" : "Idle"},
+                            {   
+                                "path" : "../assets/animations/actionClip@administering_cpr.glb",
+                                "name" : "Administering CPR"},
+                            {   
+                                "path" : "../assets/animations/actionClip@dying.glb",
+                                "name" : "Dying"}]
     }
 ]
