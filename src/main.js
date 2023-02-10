@@ -1,68 +1,91 @@
-
 import * as THREE from 'three';
 
 import Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
-
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-let container, stats, clock, gui, mixer, actions, activeAction, previousAction;
-let camera, scene, renderer, model, face;
+let scene, renderer, camera, stats;
+let model, skeleton, mixer, clock;
 
-const api = { state: 'Walking' };
+const crossFadeControls = [];
+
+let currentBaseAction = 'idle';
+const allActions = [];
+const baseActions = {
+    Idle: { weight: 1 },
+};
+
+let panelSettings, numAnimations;
 
 init();
-animate();
 
 function init() {
 
-    container = document.createElement( 'div' );
-    document.body.appendChild( container );
-
-    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.25, 100 );
-    camera.position.set( - 5, 3, 10 );
-    camera.lookAt( 0, 2, 0 );
-
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color( 0xe0e0e0 );
-    scene.fog = new THREE.Fog( 0xe0e0e0, 20, 100 );
-
     clock = new THREE.Clock();
 
-    // lights
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color( 0xa0a0a0 );
+    scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
 
     const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
     hemiLight.position.set( 0, 20, 0 );
     scene.add( hemiLight );
 
     const dirLight = new THREE.DirectionalLight( 0xffffff );
-    dirLight.position.set( 0, 20, 10 );
+    dirLight.position.set( 3, 10, 10 );
+    dirLight.castShadow = true;
+    dirLight.shadow.camera.top = 2;
+    dirLight.shadow.camera.bottom = - 2;
+    dirLight.shadow.camera.left = - 2;
+    dirLight.shadow.camera.right = 2;
+    dirLight.shadow.camera.near = 0.1;
+    dirLight.shadow.camera.far = 40;
     scene.add( dirLight );
 
     // ground
 
-    const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
+    const mesh = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshPhongMaterial( { color: 0x999999, depthWrite: false } ) );
     mesh.rotation.x = - Math.PI / 2;
+    mesh.receiveShadow = true;
     scene.add( mesh );
 
-    const grid = new THREE.GridHelper( 200, 40, 0x000000, 0x000000 );
-    grid.material.opacity = 0.2;
-    grid.material.transparent = true;
-    scene.add( grid );
-
-    // model
-
     const loader = new GLTFLoader();
-    loader.load( '../assets/gltf/RobotExpressive.glb', function ( gltf ) {
+    loader.load( '../assets/gltf/Female_Default.glb', function ( gltf ) {
 
         model = gltf.scene;
         scene.add( model );
 
-        createGUI( model, gltf.animations );
+        model.traverse( function ( object ) {
 
-    }, undefined, function ( e ) {
+            if ( object.isMesh ) object.castShadow = true;
 
-        console.error( e );
+        } );
+
+        skeleton = new THREE.SkeletonHelper( model );
+        skeleton.visible = false;
+        scene.add( skeleton );
+
+        const animations = gltf.animations;
+        mixer = new THREE.AnimationMixer( model );
+
+        numAnimations = animations.length;
+
+        for ( let i = 0; i !== numAnimations; ++ i ) {
+
+            let clip = animations[ i ];
+            const name = clip.name;
+
+            const action = mixer.clipAction( clip );
+            activateAction( action );
+            baseActions[ name ].action = action;
+            allActions.push( action );
+
+        }
+
+        createPanel();
+
+        animate();
 
     } );
 
@@ -70,127 +93,214 @@ function init() {
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     renderer.outputEncoding = THREE.sRGBEncoding;
-    container.appendChild( renderer.domElement );
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild( renderer.domElement );
+
+    // camera
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 100 );
+    camera.position.set( - 1, 2, 3 );
+
+    const controls = new OrbitControls( camera, renderer.domElement );
+    controls.enablePan = false;
+    controls.enableZoom = false;
+    controls.target.set( 0, 1, 0 );
+    controls.update();
+
+    stats = new Stats();
+    document.body.appendChild( stats.dom );
 
     window.addEventListener( 'resize', onWindowResize );
 
-    // stats
-    stats = new Stats();
-    container.appendChild( stats.dom );
+}
+
+function createPanel() {
+
+    const panel = new GUI( { width: 310 } );
+
+    const folder1 = panel.addFolder( 'Base Actions' );
+    const folder3 = panel.addFolder( 'General Speed' );
+
+    panelSettings = {
+        'modify time scale': 1.0
+    };
+
+    const baseNames = [ 'None', ...Object.keys( baseActions ) ];
+
+    for ( let i = 0, l = baseNames.length; i !== l; ++ i ) {
+
+        const name = baseNames[ i ];
+        const settings = baseActions[ name ];
+        panelSettings[ name ] = function () {
+
+            const currentSettings = baseActions[ currentBaseAction ];
+            const currentAction = currentSettings ? currentSettings.action : null;
+            const action = settings ? settings.action : null;
+
+            if ( currentAction !== action ) {
+
+                prepareCrossFade( currentAction, action, 0.35 );
+
+            }
+
+        };
+
+        crossFadeControls.push( folder1.add( panelSettings, name ) );
+
+    }
+
+
+    folder3.add( panelSettings, 'modify time scale', 0.0, 1.5, 0.01 ).onChange( modifyTimeScale );
+
+    folder1.open();
+    folder3.open();
+
+    crossFadeControls.forEach( function ( control ) {
+
+        control.setInactive = function () {
+
+            control.domElement.classList.add( 'control-inactive' );
+
+        };
+
+        control.setActive = function () {
+
+            control.domElement.classList.remove( 'control-inactive' );
+
+        };
+
+        const settings = baseActions[ control.property ];
+
+        if ( ! settings || ! settings.weight ) {
+
+            control.setInactive();
+
+        }
+
+    } );
 
 }
 
-function createGUI( model, animations ) {
+function activateAction( action ) {
 
-    const states = [ 'Idle', 'Walking', 'Running', 'Dance', 'Death', 'Sitting', 'Standing' ];
-    const emotes = [ 'Jump', 'Yes', 'No', 'Wave', 'Punch', 'ThumbsUp' ];
+    const clip = action.getClip();
+    const settings = baseActions[ clip.name ];
+    setWeight( action, settings.weight );
+    action.play();
 
-    gui = new GUI();
+}
 
-    mixer = new THREE.AnimationMixer( model );
+function modifyTimeScale( speed ) {
 
-    actions = {};
+    mixer.timeScale = speed;
 
-    for ( let i = 0; i < animations.length; i ++ ) {
+}
 
-        const clip = animations[ i ];
-        const action = mixer.clipAction( clip );
-        actions[ clip.name ] = action;
+function prepareCrossFade( startAction, endAction, duration ) {
 
-        if ( emotes.indexOf( clip.name ) >= 0 || states.indexOf( clip.name ) >= 4 ) {
+    // If the current action is 'idle', execute the crossfade immediately;
+    // else wait until the current action has finished its current loop
 
-            action.clampWhenFinished = true;
-            action.loop = THREE.LoopOnce;
+    if ( currentBaseAction === 'Idle' || ! startAction || ! endAction ) {
+
+        executeCrossFade( startAction, endAction, duration );
+
+    } else {
+
+        synchronizeCrossFade( startAction, endAction, duration );
+
+    }
+
+    // Update control colors
+
+    if ( endAction ) {
+
+        const clip = endAction.getClip();
+        currentBaseAction = clip.name;
+
+    } else {
+
+        currentBaseAction = 'None';
+
+    }
+
+    crossFadeControls.forEach( function ( control ) {
+
+        const name = control.property;
+
+        if ( name === currentBaseAction ) {
+
+            control.setActive();
+
+        } else {
+
+            control.setInactive();
+
+        }
+
+    } );
+
+}
+
+function synchronizeCrossFade( startAction, endAction, duration ) {
+
+    mixer.addEventListener( 'loop', onLoopFinished );
+
+    function onLoopFinished( event ) {
+
+        if ( event.action === startAction ) {
+
+            mixer.removeEventListener( 'loop', onLoopFinished );
+
+            executeCrossFade( startAction, endAction, duration );
 
         }
 
     }
 
-    // states
+}
 
-    const statesFolder = gui.addFolder( 'States' );
+function executeCrossFade( startAction, endAction, duration ) {
 
-    const clipCtrl = statesFolder.add( api, 'state' ).options( states );
+    // Not only the start action, but also the end action must get a weight of 1 before fading
+    // (concerning the start action this is already guaranteed in this place)
 
-    clipCtrl.onChange( function () {
+    if ( endAction ) {
 
-        fadeToAction( api.state, 0.5 );
+        setWeight( endAction, 1 );
+        endAction.time = 0;
 
-    } );
+        if ( startAction ) {
 
-    statesFolder.open();
+            // Crossfade with warping
 
-    // emotes
+            startAction.crossFadeTo( endAction, duration, true );
 
-    const emoteFolder = gui.addFolder( 'Emotes' );
+        } else {
 
-    function createEmoteCallback( name ) {
+            // Fade in
 
-        api[ name ] = function () {
+            endAction.fadeIn( duration );
 
-            fadeToAction( name, 0.2 );
+        }
 
-            mixer.addEventListener( 'finished', restoreState );
+    } else {
 
-        };
+        // Fade out
 
-        emoteFolder.add( api, name );
-
-    }
-
-    function restoreState() {
-
-        mixer.removeEventListener( 'finished', restoreState );
-
-        fadeToAction( api.state, 0.2 );
+        startAction.fadeOut( duration );
 
     }
-
-    for ( let i = 0; i < emotes.length; i ++ ) {
-
-        createEmoteCallback( emotes[ i ] );
-
-    }
-
-    emoteFolder.open();
-
-    // expressions
-
-    face = model.getObjectByName( 'Head_4' );
-
-    const expressions = Object.keys( face.morphTargetDictionary );
-    const expressionFolder = gui.addFolder( 'Expressions' );
-
-    for ( let i = 0; i < expressions.length; i ++ ) {
-
-        expressionFolder.add( face.morphTargetInfluences, i, 0, 1, 0.01 ).name( expressions[ i ] );
-
-    }
-
-    activeAction = actions[ 'Walking' ];
-    activeAction.play();
-
-    expressionFolder.open();
 
 }
 
-function fadeToAction( name, duration ) {
+// This function is needed, since animationAction.crossFadeTo() disables its start action and sets
+// the start action's timeScale to ((start animation's duration) / (end animation's duration))
 
-    previousAction = activeAction;
-    activeAction = actions[ name ];
+function setWeight( action, weight ) {
 
-    if ( previousAction !== activeAction ) {
-
-        previousAction.fadeOut( duration );
-
-    }
-
-    activeAction
-        .reset()
-        .setEffectiveTimeScale( 1 )
-        .setEffectiveWeight( 1 )
-        .fadeIn( duration )
-        .play();
+    action.enabled = true;
+    action.setEffectiveTimeScale( 1 );
+    action.setEffectiveWeight( weight );
 
 }
 
@@ -203,18 +313,31 @@ function onWindowResize() {
 
 }
 
-//
-
 function animate() {
 
-    const dt = clock.getDelta();
-
-    if ( mixer ) mixer.update( dt );
+    // Render loop
 
     requestAnimationFrame( animate );
 
-    renderer.render( scene, camera );
+    for ( let i = 0; i !== numAnimations; ++ i ) {
+
+        const action = allActions[ i ];
+        const clip = action.getClip();
+        const settings = baseActions[ clip.name ];
+        settings.weight = action.getEffectiveWeight();
+
+    }
+
+    // Get the time elapsed since the last frame, used for mixer update
+
+    const mixerUpdateDelta = clock.getDelta();
+
+    // Update the animation mixer, the stats panel, and render this frame
+
+    mixer.update( mixerUpdateDelta );
 
     stats.update();
+
+    renderer.render( scene, camera );
 
 }
