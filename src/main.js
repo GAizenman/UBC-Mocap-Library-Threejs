@@ -10,9 +10,9 @@ let model, skeleton, mixer, clock;
 
 const crossFadeControls = [];
 
-let currentBaseAction = 'idle';
+let currentBaseAction = 'Idle';
 const allActions = [];
-const baseActions = {
+let baseActions = {
     Idle: { weight: 1 },
 };
 
@@ -84,7 +84,7 @@ function init() {
         }
 
         createPanel();
-
+        // console.log(baseActions);
         animate();
 
     } );
@@ -101,8 +101,8 @@ function init() {
     camera.position.set( - 1, 2, 3 );
 
     const controls = new OrbitControls( camera, renderer.domElement );
-    controls.enablePan = false;
-    controls.enableZoom = false;
+    // controls.enablePan = false;
+    // controls.enableZoom = false;
     controls.target.set( 0, 1, 0 );
     controls.update();
 
@@ -115,14 +115,30 @@ function init() {
 
 function createPanel() {
 
-    const panel = new GUI( { width: 310 } );
+    const panel = new GUI( { width: 400 } );
 
-    const folder1 = panel.addFolder( 'Base Actions' );
-    const folder3 = panel.addFolder( 'General Speed' );
+    const folder1 = panel.addFolder( 'Visibility' );
+	const folder2 = panel.addFolder( 'Pausing/Stepping' );
+    const folder3 = panel.addFolder( 'Base Actions' );
+    const folder4 = panel.addFolder( 'General Speed' );
 
     panelSettings = {
+        'show model': true,
+        'show skeleton': false,
+        'pause/continue': pauseContinue,
+        'make single step': toSingleStepMode,
+        'modify step size': 0.05,
+        'use default duration': true,
+		'set custom duration': 0.6,
         'modify time scale': 1.0
     };
+    folder1.add( settings, 'show model' ).onChange( showModel );
+    folder1.add( settings, 'show skeleton' ).onChange( showSkeleton );
+    folder2.add( settings, 'pause/continue' );
+    folder2.add( settings, 'make single step' );
+    folder2.add( settings, 'modify step size', 0.01, 0.1, 0.001 );
+    folder3.add( panelSettings, 'use default duration' );
+    folder3.add( panelSettings, 'set custom duration', 0, 10, 0.01 );
 
     const baseNames = [ 'None', ...Object.keys( baseActions ) ];
 
@@ -135,24 +151,26 @@ function createPanel() {
             const currentSettings = baseActions[ currentBaseAction ];
             const currentAction = currentSettings ? currentSettings.action : null;
             const action = settings ? settings.action : null;
-
+            
             if ( currentAction !== action ) {
 
-                prepareCrossFade( currentAction, action, 0.35 );
+                prepareCrossFade( currentAction, action, 0.6);
 
             }
 
         };
 
-        crossFadeControls.push( folder1.add( panelSettings, name ) );
+        crossFadeControls.push( folder3.add( panelSettings, name ) );
 
     }
 
-
-    folder3.add( panelSettings, 'modify time scale', 0.0, 1.5, 0.01 ).onChange( modifyTimeScale );
+    
+    folder4.add( panelSettings, 'modify time scale', 0.0, 1.5, 0.01 ).onChange( modifyTimeScale );
 
     folder1.open();
+	folder2.open();
     folder3.open();
+    folder4.open();
 
     crossFadeControls.forEach( function ( control ) {
 
@@ -192,19 +210,35 @@ function activateAction( action ) {
 
 }
 
+function showModel( visibility ) {
+
+    model.visible = visibility;
+
+}
+
+
+function showSkeleton( visibility ) {
+
+    skeleton.visible = visibility;
+
+}
+
 function modifyTimeScale( speed ) {
 
     mixer.timeScale = speed;
 
 }
 
-function prepareCrossFade( startAction, endAction, duration ) {
+function prepareCrossFade( startAction, endAction, defaultDuration) {
+    // Switch default / custom crossfade duration (according to the user's choice)
 
-    // If the current action is 'idle', execute the crossfade immediately;
+    const duration = setCrossFadeDuration( defaultDuration );
+
+    // If the current action is 'Idle', execute the crossfade immediately;
     // else wait until the current action has finished its current loop
-
+    
     if ( currentBaseAction === 'Idle' || ! startAction || ! endAction ) {
-
+        
         executeCrossFade( startAction, endAction, duration );
 
     } else {
@@ -216,7 +250,7 @@ function prepareCrossFade( startAction, endAction, duration ) {
     // Update control colors
 
     if ( endAction ) {
-
+        
         const clip = endAction.getClip();
         currentBaseAction = clip.name;
 
@@ -243,7 +277,21 @@ function prepareCrossFade( startAction, endAction, duration ) {
     } );
 
 }
+function setCrossFadeDuration( defaultDuration ) {
 
+    // Switch default crossfade duration <-> custom crossfade duration
+
+    if ( panelSettings[ 'use default duration' ] ) {
+
+        return defaultDuration;
+
+    } else {
+
+        return panelSettings[ 'set custom duration' ];
+
+    }
+
+}
 function synchronizeCrossFade( startAction, endAction, duration ) {
 
     mixer.addEventListener( 'loop', onLoopFinished );
@@ -263,7 +311,6 @@ function synchronizeCrossFade( startAction, endAction, duration ) {
 }
 
 function executeCrossFade( startAction, endAction, duration ) {
-
     // Not only the start action, but also the end action must get a weight of 1 before fading
     // (concerning the start action this is already guaranteed in this place)
 
@@ -271,12 +318,14 @@ function executeCrossFade( startAction, endAction, duration ) {
 
         setWeight( endAction, 1 );
         endAction.time = 0;
-
+        console.log(startAction)
+        console.log(endAction)
         if ( startAction ) {
 
             // Crossfade with warping
 
             startAction.crossFadeTo( endAction, duration, true );
+
 
         } else {
 
@@ -293,6 +342,8 @@ function executeCrossFade( startAction, endAction, duration ) {
         startAction.fadeOut( duration );
 
     }
+    console.log(baseActions)
+    
 
 }
 
