@@ -183,6 +183,9 @@ function createPanel() {
 function activateAction( action ) {
 
     const clip = action.getClip();
+    if(!baseActions.hasOwnProperty(clip.name)){
+        baseActions[ clip.name ] = {weight : 0}
+    }
     const settings = baseActions[ clip.name ];
     setWeight( action, settings.weight );
     action.play();
