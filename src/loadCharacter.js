@@ -238,7 +238,6 @@ function toSingleStepMode() {
 }
 
 function prepareCrossFade(startAction, endAction, defaultDuration) {
-    
     // Switch default / custom crossfade duration (according to the user's choice)
     const duration = setCrossFadeDuration(defaultDuration);
 
@@ -281,9 +280,8 @@ function setCrossFadeDuration(defaultDuration) {
     }
 }
 function synchronizeCrossFade(startAction, endAction, duration) {
-    
     mixer.addEventListener("loop", onLoopFinished);
-    
+
     function onLoopFinished(event) {
         if (event.action === startAction) {
             mixer.removeEventListener("loop", onLoopFinished);
@@ -342,7 +340,7 @@ function animate() {
 
     // Get the time elapsed since the last frame, used for mixer update
     let mixerUpdateDelta = clock.getDelta();
-    
+
     // If in single step mode, make one step and then do nothing (until the user clicks again)
     if (singleStepMode) {
         mixerUpdateDelta = sizeOfNextStep;
