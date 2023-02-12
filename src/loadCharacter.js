@@ -4,6 +4,7 @@ import Stats from "three/addons/libs/stats.module.js";
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
 let scene, renderer, camera, stats;
 let model, skeleton, mixer, clock;
 
@@ -237,18 +238,16 @@ function toSingleStepMode() {
 }
 
 function prepareCrossFade(startAction, endAction, defaultDuration) {
+    
     // Switch default / custom crossfade duration (according to the user's choice)
-
     const duration = setCrossFadeDuration(defaultDuration);
 
     // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
-
     singleStepMode = false;
     unPauseAllActions();
 
     // If the current action is 'Idle', execute the crossfade immediately;
     // else wait until the current action has finished its current loop
-
     if (currentBaseAction === "Idle" || !startAction || !endAction) {
         executeCrossFade(startAction, endAction, duration);
     } else {
@@ -256,7 +255,6 @@ function prepareCrossFade(startAction, endAction, defaultDuration) {
     }
 
     // Update control colors
-
     if (endAction) {
         const clip = endAction.getClip();
         currentBaseAction = clip.name;
@@ -276,7 +274,6 @@ function prepareCrossFade(startAction, endAction, defaultDuration) {
 }
 function setCrossFadeDuration(defaultDuration) {
     // Switch default crossfade duration <-> custom crossfade duration
-
     if (panelSettings["use default duration"]) {
         return defaultDuration;
     } else {
@@ -284,8 +281,9 @@ function setCrossFadeDuration(defaultDuration) {
     }
 }
 function synchronizeCrossFade(startAction, endAction, duration) {
+    
     mixer.addEventListener("loop", onLoopFinished);
-
+    
     function onLoopFinished(event) {
         if (event.action === startAction) {
             mixer.removeEventListener("loop", onLoopFinished);
@@ -298,23 +296,19 @@ function synchronizeCrossFade(startAction, endAction, duration) {
 function executeCrossFade(startAction, endAction, duration) {
     // Not only the start action, but also the end action must get a weight of 1 before fading
     // (concerning the start action this is already guaranteed in this place)
-
     if (endAction) {
         setWeight(endAction, 1);
         endAction.time = 0;
 
         if (startAction) {
             // Crossfade with warping
-
             startAction.crossFadeTo(endAction, duration, true);
         } else {
             // Fade in
-
             endAction.fadeIn(duration);
         }
     } else {
         // Fade out
-
         startAction.fadeOut(duration);
     }
 }
@@ -337,7 +331,6 @@ function onWindowResize() {
 
 function animate() {
     // Render loop
-
     requestAnimationFrame(animate);
 
     for (let i = 0; i !== numAnimations; ++i) {
@@ -348,17 +341,14 @@ function animate() {
     }
 
     // Get the time elapsed since the last frame, used for mixer update
-
     let mixerUpdateDelta = clock.getDelta();
-
+    
     // If in single step mode, make one step and then do nothing (until the user clicks again)
-
     if (singleStepMode) {
         mixerUpdateDelta = sizeOfNextStep;
         sizeOfNextStep = 0;
     }
     // Update the animation mixer, the stats panel, and render this frame
-
     mixer.update(mixerUpdateDelta);
 
     stats.update();

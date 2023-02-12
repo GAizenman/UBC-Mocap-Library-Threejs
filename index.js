@@ -1,3 +1,4 @@
-import { init as populateViewport } from "./src/populate.js";
+import { init as loadCharacter } from "./src/loadCharacter.js";
 
-populateViewport("../assets/gltf/Female_Default.glb");
+
+loadCharacter("../assets/gltf/Female_Default.glb");
