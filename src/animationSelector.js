@@ -1,17 +1,21 @@
 import * as THREE from "three";
-
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
 
 let canvas, renderer;
-
+let mixer, model;
+let allActions = [];
 const scenes = [];
+let animations;
 
 init();
 animate();
 
 export function init() {
     canvas = document.getElementById("c");
-
+    
+    // console.log(allActions);
     const geometries = [
         new THREE.BoxGeometry(1, 1, 1),
         new THREE.SphereGeometry(0.5, 12, 8),
@@ -20,59 +24,54 @@ export function init() {
     ];
 
     const content = document.getElementById("content");
+    const loader = new GLTFLoader();
+    
 
-    for (let i = 0; i < 40; i++) {
-        const scene = new THREE.Scene();
-
-        // make a list item
-        const element = document.createElement("div");
-        element.className = "list-item";
-
-        const sceneElement = document.createElement("div");
-        element.appendChild(sceneElement);
-
-        const descriptionElement = document.createElement("div");
-        descriptionElement.innerText = "Scene " + (i + 1);
-        element.appendChild(descriptionElement);
-
-        // the element that represents the area we want to render the scene
-        scene.userData.element = sceneElement;
-        content.appendChild(element);
-
-        const camera = new THREE.PerspectiveCamera(50, 1, 1, 10);
-        camera.position.z = 2;
-        scene.userData.camera = camera;
-
-        const controls = new OrbitControls(
-            scene.userData.camera,
-            scene.userData.element
-        );
-        controls.minDistance = 2;
-        controls.maxDistance = 5;
-        controls.enablePan = false;
-        controls.enableZoom = false;
-        scene.userData.controls = controls;
-
-        // add one random mesh to each scene
-        const geometry = geometries[(geometries.length * Math.random()) | 0];
-
-        const material = new THREE.MeshStandardMaterial({
-            color: new THREE.Color().setHSL(Math.random(), 1, 0.75),
-            roughness: 0.5,
-            metalness: 0,
-            flatShading: true
+    loader.load("../assets/gltf/Female_Default.glb", function (gltf) {
+        model = gltf.scene;
+        
+        animations = gltf.animations;
+        
+        console.log(animations)
+        
+        animations.forEach( function(anim) {
+            const scene = new THREE.Scene();
+            mixer = new THREE.AnimationMixer(model);
+            
+            // make a list item
+            const element = document.createElement("div");
+            element.className = "list-item";
+    
+            const sceneElement = document.createElement("div");
+            element.appendChild(sceneElement);
+    
+            const descriptionElement = document.createElement("div");
+            descriptionElement.innerText = anim.name;
+            element.appendChild(descriptionElement);
+    
+            // the element that represents the area we want to render the scene
+            scene.userData.element = sceneElement;
+            content.appendChild(element);
+    
+            const camera = new THREE.PerspectiveCamera(50, 1, 1, 10);
+            camera.position.z = 2;
+            scene.userData.camera = camera;
+            scene.add(model)
+            
+            let action = mixer.clipAction(anim);
+            action.fadeIn();
+            action.play();
+    
+            scene.add(new THREE.HemisphereLight(0xaaaaaa, 0x444444));
+    
+            const light = new THREE.DirectionalLight(0xffffff, 0.5);
+            light.position.set(1, 1, 1);
+            scene.add(light);
+    
+            scenes.push(scene);
         });
 
-        scene.add(new THREE.Mesh(geometry, material));
-
-        scene.add(new THREE.HemisphereLight(0xaaaaaa, 0x444444));
-
-        const light = new THREE.DirectionalLight(0xffffff, 0.5);
-        light.position.set(1, 1, 1);
-        scene.add(light);
-
-        scenes.push(scene);
-    }
+    });
 
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 1);
@@ -107,7 +106,7 @@ function render() {
 
     scenes.forEach(function (scene) {
         // so something moves
-        scene.children[0].rotation.y = Date.now() * 0.001;
+        // scene.children[0].rotation.y = Date.now() * 0.001;
 
         // get the element that is a place holder for where we want to
         // draw the scene

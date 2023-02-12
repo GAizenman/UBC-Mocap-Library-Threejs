@@ -84,7 +84,7 @@ export function init(asset) {
         }
 
         createPanel();
-        // console.log(baseActions);
+
         animate();
     });
 
