@@ -3,7 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 
-let canvas, renderer;
+let canvas, renderer, clock;
 let model;
 let allActions = [];
 const scenes= [];
@@ -14,6 +14,7 @@ init();
 animate();
 
 export function init() {
+    clock = new THREE.Clock();
     loadActions()
     
     canvas = document.getElementById("c");
@@ -56,7 +57,7 @@ async function loadActions(){
         scene.userData.camera = camera;
         scene.add(modelclone)
         
-        let action = mixer.clipAction(anim);
+        let action = mixer.clipAction(anim).play();
         activateAction(action)
         // action.fadeIn();
     
@@ -90,11 +91,10 @@ function updateSize() {
 
 function animate() {
     requestAnimationFrame(animate);
-    render();
-}
-
-function render() {
     updateSize();
+    
+    const delta = clock.getDelta();
+    for ( const mixer of mixers ) mixer.update( delta );
 
     canvas.style.transform = `translateY(${window.scrollY}px)`;
 
