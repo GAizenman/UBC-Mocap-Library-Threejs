@@ -1,12 +1,9 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { clone } from 'three/addons/utils/SkeletonUtils.js';
+import { clone } from "three/addons/utils/SkeletonUtils.js";
 
-let canvas, renderer, clock;
-let model;
-let allActions = [];
-const scenes= [];
+let canvas, renderer, clock, model;
+const scenes = [];
 const mixers = [];
 let animations;
 
@@ -14,28 +11,26 @@ init();
 animate();
 
 export function init() {
-    clock = new THREE.Clock();
-    loadActions()
-    
+    loadActions();
+
     canvas = document.getElementById("c");
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 1);
     renderer.setPixelRatio(window.devicePixelRatio);
-    
 }
-async function loadActions(){
+async function loadActions() {
+    clock = new THREE.Clock();
     const loader = new GLTFLoader();
     const gltf = await loader.loadAsync("../assets/gltf/Female_Default.glb");
     animations = gltf.animations;
     model = gltf.scene;
-    
-    animations.forEach( (anim) => {
-        
-        let modelclone = clone(model); 
-        
+
+    animations.forEach((anim) => {
+        let modelclone = clone(model);
+
         const scene = new THREE.Scene();
         const mixer = new THREE.AnimationMixer(modelclone);
-        
+
         const content = document.getElementById("content");
         // make a list item
         const element = document.createElement("div");
@@ -53,32 +48,22 @@ async function loadActions(){
         content.appendChild(element);
 
         const camera = new THREE.PerspectiveCamera(50, 1, 1, 10);
-        camera.position.z = 5;
+        camera.position.y = 1;
+        camera.position.z = 3;
+
         scene.userData.camera = camera;
-        scene.add(modelclone)
-        
-        let action = mixer.clipAction(anim).play();
-        activateAction(action)
-        // action.fadeIn();
-    
+        scene.add(modelclone);
+
         scene.add(new THREE.HemisphereLight(0xaaaaaa, 0x444444));
 
         const light = new THREE.DirectionalLight(0xffffff, 0.5);
         light.position.set(1, 1, 1);
         scene.add(light);
 
+        let action = mixer.clipAction(anim).play();
         mixers.push(mixer);
         scenes.push(scene);
-        
     });
-    
-}
-function activateAction(action){
-    console.log(action)
-    action.play();
-    action.setEffectiveWeight(1);
-    action.time = 0;
-    action.paused = false;
 }
 function updateSize() {
     const width = canvas.clientWidth;
@@ -92,9 +77,9 @@ function updateSize() {
 function animate() {
     requestAnimationFrame(animate);
     updateSize();
-    
+
     const delta = clock.getDelta();
-    for ( const mixer of mixers ) mixer.update( delta );
+    for (const mixer of mixers) mixer.update(delta);
 
     canvas.style.transform = `translateY(${window.scrollY}px)`;
 
@@ -106,9 +91,6 @@ function animate() {
     renderer.setScissorTest(true);
 
     scenes.forEach(function (scene) {
-        // so something moves
-        // scene.children[0].rotation.y = Date.now() * 0.001;
-
         // get the element that is a place holder for where we want to
         // draw the scene
         const element = scene.userData.element;
