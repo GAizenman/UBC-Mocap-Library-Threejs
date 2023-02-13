@@ -1,83 +1,84 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
+import { clone } from 'three/addons/utils/SkeletonUtils.js';
 
 let canvas, renderer;
-let mixer, model;
+let model;
 let allActions = [];
-const scenes = [];
+const scenes= [];
+const mixers = [];
 let animations;
 
 init();
 animate();
 
 export function init() {
+    loadActions()
+    
     canvas = document.getElementById("c");
-    
-    // console.log(allActions);
-    const geometries = [
-        new THREE.BoxGeometry(1, 1, 1),
-        new THREE.SphereGeometry(0.5, 12, 8),
-        new THREE.DodecahedronGeometry(0.5),
-        new THREE.CylinderGeometry(0.5, 0.5, 1, 12)
-    ];
-
-    const content = document.getElementById("content");
-    const loader = new GLTFLoader();
-    
-
-    loader.load("../assets/gltf/Female_Default.glb", function (gltf) {
-        model = gltf.scene;
-        
-        animations = gltf.animations;
-        
-        console.log(animations)
-        
-        animations.forEach( function(anim) {
-            const scene = new THREE.Scene();
-            mixer = new THREE.AnimationMixer(model);
-            
-            // make a list item
-            const element = document.createElement("div");
-            element.className = "list-item";
-    
-            const sceneElement = document.createElement("div");
-            element.appendChild(sceneElement);
-    
-            const descriptionElement = document.createElement("div");
-            descriptionElement.innerText = anim.name;
-            element.appendChild(descriptionElement);
-    
-            // the element that represents the area we want to render the scene
-            scene.userData.element = sceneElement;
-            content.appendChild(element);
-    
-            const camera = new THREE.PerspectiveCamera(50, 1, 1, 10);
-            camera.position.z = 2;
-            scene.userData.camera = camera;
-            scene.add(model)
-            
-            let action = mixer.clipAction(anim);
-            action.fadeIn();
-            action.play();
-    
-            scene.add(new THREE.HemisphereLight(0xaaaaaa, 0x444444));
-    
-            const light = new THREE.DirectionalLight(0xffffff, 0.5);
-            light.position.set(1, 1, 1);
-            scene.add(light);
-    
-            scenes.push(scene);
-        });
-
-    });
-
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 1);
     renderer.setPixelRatio(window.devicePixelRatio);
+    
 }
+async function loadActions(){
+    const loader = new GLTFLoader();
+    const gltf = await loader.loadAsync("../assets/gltf/Female_Default.glb");
+    animations = gltf.animations;
+    model = gltf.scene;
+    
+    animations.forEach( (anim) => {
+        
+        let modelclone = clone(model); 
+        
+        const scene = new THREE.Scene();
+        const mixer = new THREE.AnimationMixer(modelclone);
+        
+        const content = document.getElementById("content");
+        // make a list item
+        const element = document.createElement("div");
+        element.className = "list-item";
 
+        const sceneElement = document.createElement("div");
+        element.appendChild(sceneElement);
+
+        const descriptionElement = document.createElement("div");
+        descriptionElement.innerText = anim.name;
+        element.appendChild(descriptionElement);
+
+        // the element that represents the area we want to render the scene
+        scene.userData.element = sceneElement;
+        content.appendChild(element);
+
+        const camera = new THREE.PerspectiveCamera(50, 1, 1, 10);
+        camera.position.z = 5;
+        scene.userData.camera = camera;
+        scene.add(modelclone)
+        
+        let action = mixer.clipAction(anim);
+        activateAction(action)
+        // action.fadeIn();
+    
+        scene.add(new THREE.HemisphereLight(0xaaaaaa, 0x444444));
+
+        const light = new THREE.DirectionalLight(0xffffff, 0.5);
+        light.position.set(1, 1, 1);
+        scene.add(light);
+
+        mixers.push(mixer);
+        scenes.push(scene);
+        
+    });
+    
+}
+function activateAction(action){
+    console.log(action)
+    action.play();
+    action.setEffectiveWeight(1);
+    action.time = 0;
+    action.paused = false;
+}
 function updateSize() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
@@ -88,8 +89,8 @@ function updateSize() {
 }
 
 function animate() {
-    render();
     requestAnimationFrame(animate);
+    render();
 }
 
 function render() {
