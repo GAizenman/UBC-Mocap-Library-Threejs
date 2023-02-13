@@ -12,8 +12,9 @@ animate();
 
 export function init() {
     loadActions();
-
+    
     canvas = document.getElementById("c");
+    
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 1);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -43,6 +44,11 @@ async function loadActions() {
         descriptionElement.innerText = anim.name;
         element.appendChild(descriptionElement);
 
+        const addButton = document.createButton('button');
+        addButton.innerText = '+';
+        addButton.addEventListener('click', addButtonClicked);
+        element.appendChild(addButton);
+
         // the element that represents the area we want to render the scene
         scene.userData.element = sceneElement;
         content.appendChild(element);
@@ -60,7 +66,7 @@ async function loadActions() {
         light.position.set(1, 1, 1);
         scene.add(light);
 
-        let action = mixer.clipAction(anim).play();
+        mixer.clipAction(anim).play();
         mixers.push(mixer);
         scenes.push(scene);
     });
@@ -118,11 +124,6 @@ function animate() {
         renderer.setScissor(left, bottom, width, height);
 
         const camera = scene.userData.camera;
-
-        //camera.aspect = width / height; // not changing in this example
-        //camera.updateProjectionMatrix();
-
-        //scene.userData.controls.update();
 
         renderer.render(scene, camera);
     });
