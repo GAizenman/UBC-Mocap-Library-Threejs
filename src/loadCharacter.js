@@ -20,6 +20,7 @@ let panelSettings, numAnimations;
 let singleStepMode = false;
 let sizeOfNextStep = 0;
 
+// const asset = "../assets/gltf/Female_Default.glb";
 export function init(asset) {
     clock = new THREE.Clock();
 

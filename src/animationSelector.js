@@ -7,26 +7,28 @@ const scenes = [];
 const mixers = [];
 let animations;
 
-init();
-animate();
+export function init(asset) {
+    loadActions(asset);
 
-export function init() {
-    loadActions();
-    
     canvas = document.getElementById("c");
-    
+
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 1);
     renderer.setPixelRatio(window.devicePixelRatio);
+
+    animate();
 }
-async function loadActions() {
+async function loadActions(asset) {
+    // console.log(asset)
     clock = new THREE.Clock();
     const loader = new GLTFLoader();
-    const gltf = await loader.loadAsync("../assets/gltf/Female_Default.glb");
+    const gltf = await loader.loadAsync(asset);
     animations = gltf.animations;
     model = gltf.scene;
-
-    animations.forEach((anim) => {
+    for (let i = 0; i !== animations.length; ++i) {
+        let anim = animations[i];
+        // }
+        // animations.forEach((anim) => {
         let modelclone = clone(model);
 
         const scene = new THREE.Scene();
@@ -44,9 +46,11 @@ async function loadActions() {
         descriptionElement.innerText = anim.name;
         element.appendChild(descriptionElement);
 
-        const addButton = document.createButton('button');
-        addButton.innerText = '+';
-        addButton.addEventListener('click', addButtonClicked);
+        const addButton = document.createElement("button");
+        addButton.innerText = "+";
+        addButton.addEventListener("click", () => {
+            console.log(anim.name);
+        });
         element.appendChild(addButton);
 
         // the element that represents the area we want to render the scene
@@ -69,7 +73,10 @@ async function loadActions() {
         mixer.clipAction(anim).play();
         mixers.push(mixer);
         scenes.push(scene);
-    });
+    }
+}
+function addButtonClicked() {
+    console.log("ADD to viewport list of animations");
 }
 function updateSize() {
     const width = canvas.clientWidth;
