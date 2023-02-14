@@ -10,7 +10,7 @@ let animations;
 export function init(asset) {
     loadActions(asset);
 
-    canvas = document.getElementById("c");
+    canvas = document.getElementById("canvas");
 
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 1);
@@ -25,10 +25,8 @@ async function loadActions(asset) {
     const gltf = await loader.loadAsync(asset);
     animations = gltf.animations;
     model = gltf.scene;
-    for (let i = 0; i !== animations.length; ++i) {
-        let anim = animations[i];
-        // }
-        // animations.forEach((anim) => {
+
+    animations.forEach((anim) => {
         let modelclone = clone(model);
 
         const scene = new THREE.Scene();
@@ -73,7 +71,7 @@ async function loadActions(asset) {
         mixer.clipAction(anim).play();
         mixers.push(mixer);
         scenes.push(scene);
-    }
+    });
 }
 function addButtonClicked() {
     console.log("ADD to viewport list of animations");

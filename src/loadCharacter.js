@@ -20,7 +20,6 @@ let panelSettings, numAnimations;
 let singleStepMode = false;
 let sizeOfNextStep = 0;
 
-// const asset = "../assets/gltf/Female_Default.glb";
 export function init(asset) {
     clock = new THREE.Clock();
 
@@ -94,7 +93,8 @@ export function init(asset) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.shadowMap.enabled = true;
-    document.body.appendChild(renderer.domElement);
+    const viewport = document.getElementById("viewport");
+    viewport.appendChild(renderer.domElement);
 
     // camera
     camera = new THREE.PerspectiveCamera(
@@ -170,21 +170,6 @@ function createPanel() {
     folder3.open();
     folder4.open();
 
-    crossFadeControls.forEach(function (control) {
-        control.setInactive = function () {
-            control.domElement.classList.add("control-inactive");
-        };
-
-        control.setActive = function () {
-            control.domElement.classList.remove("control-inactive");
-        };
-
-        const settings = baseActions[control.property];
-
-        if (!settings || !settings.weight) {
-            control.setInactive();
-        }
-    });
 }
 
 function activateAction(action) {
