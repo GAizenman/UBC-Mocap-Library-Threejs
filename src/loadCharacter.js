@@ -93,8 +93,8 @@ export function init(asset) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.shadowMap.enabled = true;
-    const viewport = document.getElementById("viewport");
-    viewport.appendChild(renderer.domElement);
+    // const viewport = document.getElementById("viewport");
+    document.body.appendChild(renderer.domElement);
 
     // camera
     camera = new THREE.PerspectiveCamera(
@@ -247,15 +247,15 @@ function prepareCrossFade(startAction, endAction, defaultDuration) {
         currentBaseAction = "None";
     }
 
-    crossFadeControls.forEach(function (control) {
-        const name = control.property;
+    // crossFadeControls.forEach(function (control) {
+    //     const name = control.property;
 
-        if (name === currentBaseAction) {
-            control.setActive();
-        } else {
-            control.setInactive();
-        }
-    });
+    //     if (name === currentBaseAction) {
+    //         control.setActive();
+    //     } else {
+    //         control.setInactive();
+    //     }
+    // });
 }
 function setCrossFadeDuration(defaultDuration) {
     // Switch default crossfade duration <-> custom crossfade duration
