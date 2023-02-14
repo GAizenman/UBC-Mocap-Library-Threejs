@@ -84,7 +84,7 @@ export function init(asset) {
         }
 
         createPanel();
-        // console.log(baseActions);
+
         animate();
     });
 
@@ -93,6 +93,7 @@ export function init(asset) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.shadowMap.enabled = true;
+    // const viewport = document.getElementById("viewport");
     document.body.appendChild(renderer.domElement);
 
     // camera
@@ -169,21 +170,6 @@ function createPanel() {
     folder3.open();
     folder4.open();
 
-    crossFadeControls.forEach(function (control) {
-        control.setInactive = function () {
-            control.domElement.classList.add("control-inactive");
-        };
-
-        control.setActive = function () {
-            control.domElement.classList.remove("control-inactive");
-        };
-
-        const settings = baseActions[control.property];
-
-        if (!settings || !settings.weight) {
-            control.setInactive();
-        }
-    });
 }
 
 function activateAction(action) {
@@ -238,7 +224,6 @@ function toSingleStepMode() {
 }
 
 function prepareCrossFade(startAction, endAction, defaultDuration) {
-    
     // Switch default / custom crossfade duration (according to the user's choice)
     const duration = setCrossFadeDuration(defaultDuration);
 
@@ -262,15 +247,15 @@ function prepareCrossFade(startAction, endAction, defaultDuration) {
         currentBaseAction = "None";
     }
 
-    crossFadeControls.forEach(function (control) {
-        const name = control.property;
+    // crossFadeControls.forEach(function (control) {
+    //     const name = control.property;
 
-        if (name === currentBaseAction) {
-            control.setActive();
-        } else {
-            control.setInactive();
-        }
-    });
+    //     if (name === currentBaseAction) {
+    //         control.setActive();
+    //     } else {
+    //         control.setInactive();
+    //     }
+    // });
 }
 function setCrossFadeDuration(defaultDuration) {
     // Switch default crossfade duration <-> custom crossfade duration
@@ -281,9 +266,8 @@ function setCrossFadeDuration(defaultDuration) {
     }
 }
 function synchronizeCrossFade(startAction, endAction, duration) {
-    
     mixer.addEventListener("loop", onLoopFinished);
-    
+
     function onLoopFinished(event) {
         if (event.action === startAction) {
             mixer.removeEventListener("loop", onLoopFinished);
@@ -342,7 +326,7 @@ function animate() {
 
     // Get the time elapsed since the last frame, used for mixer update
     let mixerUpdateDelta = clock.getDelta();
-    
+
     // If in single step mode, make one step and then do nothing (until the user clicks again)
     if (singleStepMode) {
         mixerUpdateDelta = sizeOfNextStep;
