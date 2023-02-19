@@ -10,7 +10,7 @@ let animations;
 export function init(asset) {
     loadActions(asset);
 
-    canvas = document.getElementById("canvas");
+    canvas = document.getElementById("canvas-left");
 
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 1);

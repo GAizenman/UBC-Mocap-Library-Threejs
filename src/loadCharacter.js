@@ -91,6 +91,7 @@ export function init(asset) {
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setViewport( window.innerWidth/2, 0, window.innerWidth/2, window.innerHeight );
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.shadowMap.enabled = true;
     // const viewport = document.getElementById("viewport");
@@ -99,11 +100,11 @@ export function init(asset) {
     // camera
     camera = new THREE.PerspectiveCamera(
         45,
-        window.innerWidth / window.innerHeight,
+        window.innerWidth/2 / window.innerHeight,
         1,
         100
     );
-    camera.position.set(-1, 2, 3);
+    camera.position.set(-1, 2, 5);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 1, 0);
@@ -116,7 +117,7 @@ export function init(asset) {
 }
 
 function createPanel() {
-    const panel = new GUI({ width: 400 });
+    const panel = new GUI({ width: 250 });
 
     const folder1 = panel.addFolder("Visibility");
     const folder2 = panel.addFolder("Pausing/Stepping");
@@ -307,10 +308,11 @@ function setWeight(action, weight) {
 }
 
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = window.innerWidth/2 / window.innerHeight;
     camera.updateProjectionMatrix();
 
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setViewport( window.innerWidth/2, 0, window.innerWidth/2, window.innerHeight );
 }
 
 function animate() {
