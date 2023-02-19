@@ -5,7 +5,7 @@ import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-let scene, renderer, camera, stats;
+let canvas, scene, renderer, camera, stats;
 let model, skeleton, mixer, clock;
 
 const crossFadeControls = [];
@@ -22,6 +22,8 @@ let sizeOfNextStep = 0;
 
 export function init(asset) {
     clock = new THREE.Clock();
+
+    canvas = document.getElementById("canvas-right");
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xa0a0a0);
@@ -88,19 +90,17 @@ export function init(asset) {
         animate();
     });
 
-    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer.setClearColor(0xffffff, 1);
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setViewport( window.innerWidth/2, 0, window.innerWidth/2, window.innerHeight );
+
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.shadowMap.enabled = true;
-    // const viewport = document.getElementById("viewport");
-    document.body.appendChild(renderer.domElement);
 
     // camera
     camera = new THREE.PerspectiveCamera(
         45,
-        window.innerWidth/2 / window.innerHeight,
+        canvas.clientWidth / canvas.clientHeight,
         1,
         100
     );
@@ -113,7 +113,6 @@ export function init(asset) {
     stats = new Stats();
     document.body.appendChild(stats.dom);
 
-    window.addEventListener("resize", onWindowResize);
 }
 
 function createPanel() {
@@ -307,17 +306,23 @@ function setWeight(action, weight) {
     action.setEffectiveWeight(weight);
 }
 
-function onWindowResize() {
-    camera.aspect = window.innerWidth/2 / window.innerHeight;
-    camera.updateProjectionMatrix();
+function updateSize() {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
 
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setViewport( window.innerWidth/2, 0, window.innerWidth/2, window.innerHeight );
+    if (canvas.width !== width || canvas.height !== height) {
+        renderer.setSize(width, height, false);
+        renderer.setViewport( 0, 0, width, height );
+        camera.aspect = width/height;
+        camera.updateProjectionMatrix();
+    }
+    
 }
 
 function animate() {
     // Render loop
     requestAnimationFrame(animate);
+    updateSize();
 
     for (let i = 0; i !== numAnimations; ++i) {
         const action = allActions[i];

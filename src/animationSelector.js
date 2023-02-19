@@ -13,7 +13,7 @@ export function init(asset) {
     canvas = document.getElementById("canvas-left");
 
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-    renderer.setClearColor(0xffffff, 1);
+    renderer.setClearColor(0xffffff, 0);
     renderer.setPixelRatio(window.devicePixelRatio);
 
     animate();
