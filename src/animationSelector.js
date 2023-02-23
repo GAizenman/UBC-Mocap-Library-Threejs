@@ -2,7 +2,9 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 
+
 let canvas, renderer, clock, model, scroller;
+
 const scenes = [];
 const mixers = [];
 let animations;
@@ -15,6 +17,7 @@ export function init(asset) {
 
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 0);
+
     renderer.setPixelRatio(window.devicePixelRatio);
 
     animate();
@@ -93,7 +96,9 @@ function animate() {
     const delta = clock.getDelta();
     for (const mixer of mixers) mixer.update(delta);
 
+
     canvas.style.transform = `translateY(${scroller.scrollTop}px)`;
+
 
     renderer.setClearColor(0xffffff);
     renderer.setScissorTest(false);
