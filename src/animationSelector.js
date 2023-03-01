@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
+import { changeAction } from "./loadCharacter.js";
 
 
 let canvas, renderer, clock, model, scroller;
@@ -42,6 +43,9 @@ async function loadActions(asset) {
         element.className = "list-item";
 
         const sceneElement = document.createElement("div");
+        sceneElement.addEventListener("click", () => {
+            changeAction(anim.name);
+        });
         element.appendChild(sceneElement);
 
         const descriptionElement = document.createElement("div");
@@ -77,9 +81,7 @@ async function loadActions(asset) {
         scenes.push(scene);
     });
 }
-function addButtonClicked() {
-    console.log("ADD to viewport list of animations");
-}
+
 function updateSize() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;

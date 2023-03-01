@@ -223,6 +223,27 @@ function toSingleStepMode() {
     sizeOfNextStep = panelSettings["modify step size"];
 }
 
+// function for onClick for selector page
+export function changeAction(name) {
+    // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
+    singleStepMode = false;
+    unPauseAllActions();
+
+    const startAction = baseActions[currentBaseAction].action;
+    const endAction = baseActions[name].action;
+
+    // Change the animation
+    executeCrossFade(startAction, endAction, 0);
+
+    // Update control colors
+    if (endAction) {
+        const clip = endAction.getClip();
+        currentBaseAction = clip.name;
+    } else {
+        currentBaseAction = "None";
+    }
+}
+
 function prepareCrossFade(startAction, endAction, defaultDuration) {
     // Switch default / custom crossfade duration (according to the user's choice)
     const duration = setCrossFadeDuration(defaultDuration);
