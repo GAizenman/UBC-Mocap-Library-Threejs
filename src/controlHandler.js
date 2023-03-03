@@ -39,19 +39,18 @@ export function addAnimation(animationName) {
     const listInput = [animationList.length, animationName];
     animationList.push(listInput);
 
-    console.log(animationList);
-
     const content = document.getElementById("animation-list");
     // make a list item
     const element = document.createElement("div");
     element.className = "gui-section";
 
+    // make a remove button and remove from list and DOM
     const removeButton = document.createElement("button");
     removeButton.className = "button-remove";
     removeButton.innerText = "-";
     removeButton.addEventListener("click", () => {
         removeAnimation(listInput);
-        console.log(animationList);
+        element.remove();
     });
 
     const descriptionElement = document.createElement("div");
