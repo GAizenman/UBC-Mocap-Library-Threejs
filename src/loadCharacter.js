@@ -85,7 +85,16 @@ export function init(asset) {
             allActions.push(action);
         }
 
-        createPanel();
+        panelSettings = {
+            "show model": true,
+            "show skeleton": false,
+            "pause/continue": pauseContinue,
+            "make single step": toSingleStepMode,
+            "modify step size": 0.05,
+            "use default duration": true,
+            "set custom duration": 0.6,
+            "modify time scale": 1.0
+        };
 
         animate();
     });
@@ -115,63 +124,6 @@ export function init(asset) {
 
 }
 
-function createPanel() {
-    const panel = new GUI({ width: 250 });
-
-    const folder1 = panel.addFolder("Visibility");
-    const folder2 = panel.addFolder("Pausing/Stepping");
-    const folder3 = panel.addFolder("Base Actions");
-    const folder4 = panel.addFolder("General Speed");
-
-    panelSettings = {
-        "show model": true,
-        "show skeleton": false,
-        "pause/continue": pauseContinue,
-        "make single step": toSingleStepMode,
-        "modify step size": 0.05,
-        "use default duration": true,
-        "set custom duration": 0.6,
-        "modify time scale": 1.0
-    };
-    folder1.add(panelSettings, "show model").onChange(showModel);
-    folder1.add(panelSettings, "show skeleton").onChange(showSkeleton);
-    folder2.add(panelSettings, "pause/continue");
-    folder2.add(panelSettings, "make single step");
-    folder2.add(panelSettings, "modify step size", 0.01, 0.1, 0.001);
-    folder3.add(panelSettings, "use default duration");
-    folder3.add(panelSettings, "set custom duration", 0, 10, 0.01);
-
-    const baseNames = ["None", ...Object.keys(baseActions)];
-
-    for (let i = 0, l = baseNames.length; i !== l; ++i) {
-        const name = baseNames[i];
-        const settings = baseActions[name];
-        panelSettings[name] = function () {
-            const currentSettings = baseActions[currentBaseAction];
-            const currentAction = currentSettings
-                ? currentSettings.action
-                : null;
-            const action = settings ? settings.action : null;
-
-            if (currentAction !== action) {
-                prepareCrossFade(currentAction, action, 0.6);
-            }
-        };
-
-        crossFadeControls.push(folder3.add(panelSettings, name));
-    }
-
-    folder4
-        .add(panelSettings, "modify time scale", 0.0, 1.5, 0.01)
-        .onChange(modifyTimeScale);
-
-    folder1.open();
-    folder2.open();
-    folder3.open();
-    folder4.open();
-
-}
-
 function activateAction(action) {
     const clip = action.getClip();
     if (!baseActions.hasOwnProperty(clip.name)) {
@@ -182,15 +134,15 @@ function activateAction(action) {
     action.play();
 }
 
-function showModel(visibility) {
+export function showModel(visibility) {
     model.visible = visibility;
 }
 
-function showSkeleton(visibility) {
+export function showSkeleton(visibility) {
     skeleton.visible = visibility;
 }
 
-function modifyTimeScale(speed) {
+export function modifyTimeScale(speed) {
     mixer.timeScale = speed;
 }
 function pauseContinue() {

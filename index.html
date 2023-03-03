@@ -26,6 +26,7 @@
             }
         </script>
 
+
         <!-- Left Side Selector -->
         <!-- Reference: https://redstapler.co/split-js-tutorial-website-split-screen-effect/-->
         <div class="split-content">
@@ -35,20 +36,78 @@
     
                 <script type="module" src="./index.js"></script>
             </div>
-
+            
+            <!-- animation middle part -->
             <div class="b">
                 <canvas id="canvas-right"></canvas>
                 
                 <script type="module" src="./index2.js"></script>
             </div>
+
+            <!-- GUI part -->
+            <div class="c">
+                <script type="module" src="./src/controlHandler.js"></script>
+                <div class="gui-section">
+                    <h1>Controls</h1>
+                </div>
+
+                <!-- Visibility section -->
+                <div class="gui-section">
+                    <h2>Visibility:</h2>
+
+                    <div>
+                        <h3>Show Model 
+                            <label class="switch">
+                                <input type="checkbox" id="showModel" onclick="showModelClicked()" checked></input>
+                                <span class="dot round"></span>
+                            </label>
+                        </h3>
+
+                        <h3>Show Skeleton
+                            <label class="switch">
+                                <input type="checkbox" id="showSkeleton" onclick="showSkeletonClicked()"></input>
+                                <span class="dot round"></span>
+                            </label>
+                        </h3>
+                    </div>
+                    <br/>
+                </div>
+
+                <!-- Speed section -->
+                <div class="gui-section">
+                    <h2>Animation Speed:</h2>
+                    <div class="ranged-slider">
+                        <input type="range" min="0" max="2" step="0.01" value="1" class="slider" id="speedRange" oninput="speedRangeChanged()">
+                        <input type="text" min="0" max="2" step="0.01" value="1" size="1" id="speedText" oninput="speedTextChanged()">
+                    </div>
+                    <br/>
+                </div>
+
+                <!-- Speed section -->
+                <div class="gui-section">
+                    <h2>Continuous Play:</h2>
+                    <div>
+                        <button class="button button-play"><img src="./images/playIcon.png" style="width:20px;" /></button>
+                        <button class="button button-play"><img src="./images/pauseIcon.png" style="width:20px;" /></button>
+                    </div>
+                    <br/>
+                </div>
+            </div>
+
+           
+        </div>
+            
+            
+
         </div>
 
         <script>
-            Split(['.a', '.b'], {
+            Split(['.a', '.b', '.c'], {
                 gutterSize: 5,
-                sizes: [50,50]
+                sizes: [32,53,15],
+                minSize: [250,300,200]
             });
-        </script>>
+        </script>
         
     </body>
 </html>
