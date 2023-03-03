@@ -1,5 +1,6 @@
-import { showModel, showSkeleton, modifyTimeScale } from "./loadCharacter.js"
+import { showModel, showSkeleton, modifyTimeScale } from "./loadCharacter.js";
 
+const animationList = [];
 window.showModelClicked = () => {
     let visibility = document.getElementById("showModel").checked;
     showModel(visibility);
@@ -34,3 +35,50 @@ window.speedRangeChanged = () => {
     modifyTimeScale(speed);
 };
 
+export function addAnimation(animationName) {
+    const listInput = [animationList.length, animationName];
+    animationList.push(listInput);
+
+    console.log(animationList);
+
+    const content = document.getElementById("animation-list");
+    // make a list item
+    const element = document.createElement("div");
+    element.className = "gui-section";
+
+    const removeButton = document.createElement("button");
+    removeButton.className = "button-remove";
+    removeButton.innerText = "-";
+    removeButton.addEventListener("click", () => {
+        removeAnimation(listInput);
+        console.log(animationList);
+    });
+
+    const descriptionElement = document.createElement("div");
+    descriptionElement.className = "flow-list-text";
+    descriptionElement.innerText = animationName;
+
+    element.appendChild(removeButton);
+    element.appendChild(descriptionElement);
+
+    content.appendChild(element);
+};
+
+// helper function to remove an animation from the flow list
+function removeAnimation(animationRem) {
+
+    //if it is the last animation, just pop
+    if (animationRem[0] == animationList.length-1) {
+        animationList.pop();
+    }
+
+    else{
+        let ind = animationRem[0];
+        while (ind < animationList.length-1) {
+            animationList[ind][1] = animationList[ind+1][1];
+            ind++;
+        }
+        
+        animationList.pop();
+    }
+}

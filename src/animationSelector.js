@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { changeAction } from "./loadCharacter.js";
+import { addAnimation } from "./controlHandler.js";
 
 
 let canvas, renderer, clock, model, scroller;
@@ -55,7 +56,7 @@ async function loadActions(asset) {
         const addButton = document.createElement("button");
         addButton.innerText = "+";
         addButton.addEventListener("click", () => {
-            console.log(anim.name);
+            addAnimation(anim.name);
         });
         element.appendChild(addButton);
 
