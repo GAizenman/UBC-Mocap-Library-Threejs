@@ -270,6 +270,34 @@ function executeCrossFade(startAction, endAction, duration) {
     }
 }
 
+export function executeAnimationFlow(actionList, duration) {
+    // Not only the start action, but also the end action must get a weight of 1 before fading
+    // (concerning the start action this is already guaranteed in this place)
+    if (actionList.length <= 0){
+        return;
+    }
+
+    changeAction(actionList[0]);
+
+    for (let i = 1; i < actionList.length; i++){
+
+        const startAction = baseActions[currentBaseAction].action;
+        const endAction = baseActions[actionList[i]].action;
+
+        // Change the animation
+        prepareCrossFade(startAction, endAction, duration);
+
+        // Update control colors
+        if (endAction) {
+            const clip = endAction.getClip();
+            currentBaseAction = clip.name;
+        } else {
+            currentBaseAction = "None";
+        }
+
+    }
+}
+
 // This function is needed, since animationAction.crossFadeTo() disables its start action and sets
 // the start action's timeScale to ((start animation's duration) / (end animation's duration))
 

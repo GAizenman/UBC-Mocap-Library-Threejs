@@ -1,4 +1,4 @@
-import { showModel, showSkeleton, modifyTimeScale } from "./loadCharacter.js";
+import { showModel, showSkeleton, modifyTimeScale, executeAnimationFlow } from "./loadCharacter.js";
 
 const animationList = [];
 window.showModelClicked = () => {
@@ -33,6 +33,15 @@ window.speedRangeChanged = () => {
     let speed = document.getElementById("speedRange").value;
     document.getElementById("speedText").value = speed;
     modifyTimeScale(speed);
+};
+
+window.startFlow = () => {
+    let actionList = [];
+    for (let i = 0; i < animationList.length; i++) {
+        actionList.push(animationList[i][1]);
+    }
+    console.log(actionList);
+    executeAnimationFlow(actionList, 1);
 };
 
 export function addAnimation(animationName) {
