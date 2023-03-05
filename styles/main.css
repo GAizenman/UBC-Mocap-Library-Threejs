@@ -1,45 +1,45 @@
 /* For all of the library items */
 * {
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 body {
-    /* remove margins and scroll bars */
-    margin: 0;
-    overflow: hidden;
-    height: 100vh;
-  
-    /* style text */
-    text-align: left;
-    font-size: 13px;
-    font-family: Sans-Serif;
-  
-    /* color text */
-    color: #000000;
-  }
+  /* remove margins and scroll bars */
+  margin: 0;
+  overflow: hidden;
+  height: 100vh;
+
+  /* style text */
+  text-align: left;
+  font-size: 13px;
+  font-family: Sans-Serif;
+
+  /* color text */
+  color: #000000;
+}
 
 /* content and split divs */
 
 #content {
-    position: absolute;
-    top: 0;
-    width: 100%;
-    z-index: 1;
-    padding: 1em 0 0 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+  padding: 1em 0 0 0;
 }
 
 #canvas-left {
-    position: absolute;
-    left: 0px;
-    width: 100%;
-    height: 100%;
+  position: absolute;
+  left: 0px;
+  width: 100%;
+  height: 100%;
 }
 
 #canvas-right {
-    position: absolute;
-    right: 0px;
-    width: 100%;
-    height: 100%;
+  position: absolute;
+  right: 0px;
+  width: 100%;
+  height: 100%;
 }
 
 .split {
@@ -88,39 +88,44 @@ body {
 
 
 .list-item {
-    display: inline-block;
-    /* margin: 1em; */
-    padding: 1em;
-    box-shadow: 1px 2px 4px 0px rgba(0, 0, 0, 0.25);
+  display: inline-block;
+  /* margin: 1em; */
+  padding: 1em;
+  box-shadow: 1px 2px 4px 0px rgba(0, 0, 0, 0.25);
 }
 
 .list-item > div:nth-child(1) {
-    width: 200px;
-    height: 200px;
+  width: 200px;
+  height: 200px;
+}
+
+.list-item > div:nth-child(1):hover {
+  border: 1px solid;
+  border-color: #2196F3;
 }
 
 .list-item > div:nth-child(2) {
-    color: #000000;
-    font-family: sans-serif;
-    font-size: large;
-    width: 200px;
-    text-align: left;
-    margin-top: 0.5em;
+  color: #000000;
+  font-family: sans-serif;
+  font-size: large;
+  width: 200px;
+  text-align: left;
+  margin-top: 0.5em;
 }
 .list-item > div:nth-child(3) {
-    color: #1e832c;
+  color: #1e832c;
 }
 
-  .box{
-    position: relative;
-    align-content: center;
-    width: 180px;
-    height: 300px;
-    border: 2px solid black;
-    margin: 2%;
-    padding: 1%;
-    float: left;
-  }
+.box{
+  position: relative;
+  align-content: center;
+  width: 180px;
+  height: 300px;
+  border: 2px solid black;
+  margin: 2%;
+  padding: 1%;
+  float: left;
+}
 
 /* sliders and GUI */
 
@@ -137,7 +142,9 @@ body {
   text-decoration: underline;
   /* margin: 1em; */
   width: 100%;
-  padding: 1em;
+  padding-left: 1em;
+  padding-top: 3px;
+  padding-bottom: 3px;
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25);
 }
 .gui-section {
@@ -268,67 +275,60 @@ input:checked + .dot:before {
 /* header */
 /* Style the header with a grey background and some padding */
 .header {
-    overflow: hidden;
-    background-color: #6d6d6d;
-    /* color text */
-    color: #ffffff;
-    padding: 0px 10px;
-  }
+  overflow: hidden;
+  background-color: #6d6d6d;
+  /* color text */
+  color: #ffffff;
+  padding: 0px 10px;
+}
   
-  
-  
-  /* Style the header links */
-  .header a {
-    float: left;
-    color: rgb(255, 255, 255);
-    text-align: center;
-    padding: 12px;
-    text-decoration: none;
-    font-size: 18px;
-    line-height: 25px;
-    border-radius: 4px;
-    margin-top: 5px;
-    margin-left: 15px;
-  }
-  
-  /* Style the image */
-  .header img {
-    width: 150px;
-    padding:5px; 
-    float: left;
-    margin-right: 40px;
-    margin-left: 40px;
-  }
-  
-  /* Change the background color on mouse-over */
-  .header a:hover {
-    background-color: #ddd;
-    color: rgb(73, 73, 73);
-  }
-  
-  /* Style the active/current link*/
-  .header a.active {
-    color: #ffffff;
-  }
+/* Style the header links */
+.header a {
+  float: left;
+  color: rgb(255, 255, 255);
+  text-align: center;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 25px;
+  border-radius: 4px;
+  margin-top: 5px;
+  margin-left: 15px;
+}
 
-  .header a.active:hover {
-    background-color: #ddd;
-    color: rgb(73, 73, 73);
-  }
+/* Style the image */
+.header img {
+  width: 150px;
+  padding:5px; 
+  float: left;
+  margin-right: 40px;
+  margin-left: 40px;
+}
   
-  /* Float the link section to the right */
+/* Change the background color on mouse-over */
+.header a:hover {
+  background-color: #ddd;
+  color: rgb(73, 73, 73);
+}
+
+/* Style the active/current link*/
+.header a.active {
+  color: #ffffff;
+}
+
+.header a.active:hover {
+  background-color: #ddd;
+  color: rgb(73, 73, 73);
+}
+
+/* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */
+@media screen and (max-width: 500px) {
+  .header a {
+    float: none;
+    display: block;
+    text-align: left;
+  }
   .header-right {
-    float: right;
+    float: none;
   }
-  
-  /* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */
-  @media screen and (max-width: 500px) {
-    .header a {
-      float: none;
-      display: block;
-      text-align: left;
-    }
-    .header-right {
-      float: none;
-    }
-  }
+}
