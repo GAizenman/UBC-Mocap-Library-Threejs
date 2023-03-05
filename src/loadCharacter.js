@@ -86,14 +86,8 @@ export function init(asset) {
         }
 
         panelSettings = {
-            "show model": true,
-            "show skeleton": false,
-            "pause/continue": pauseContinue,
-            "make single step": toSingleStepMode,
-            "modify step size": 0.05,
             "use default duration": true,
             "set custom duration": 0.6,
-            "modify time scale": 1.0
         };
 
         animate();
@@ -140,37 +134,30 @@ export function showSkeleton(visibility) {
     skeleton.visible = visibility;
 }
 
+// if speed is changed, change the time scale
 export function modifyTimeScale(speed) {
     mixer.timeScale = speed;
 }
-function pauseContinue() {
-    if (singleStepMode) {
-        singleStepMode = false;
-        unPauseAllActions();
-    } else {
-        if (baseActions[currentBaseAction].action.paused) {
-            unPauseAllActions();
-        } else {
-            pauseAllActions();
-        }
-    }
-}
-function pauseAllActions() {
+
+export function pauseAllActions() {
     allActions.forEach(function (action) {
         action.paused = true;
     });
 }
 
-function unPauseAllActions() {
+export function unPauseAllActions() {
+    singleStepMode = false;
     allActions.forEach(function (action) {
         action.paused = false;
     });
 }
-function toSingleStepMode() {
+
+// set single step mode if single step is clicked
+export function toSingleStepMode(stepSize) {
     unPauseAllActions();
 
     singleStepMode = true;
-    sizeOfNextStep = panelSettings["modify step size"];
+    sizeOfNextStep = stepSize;
 }
 
 // function for onClick for selector page
@@ -269,8 +256,7 @@ function executeCrossFade(startAction, endAction, duration) {
 }
 
 export function executeAnimationFlow(actionList, duration) {
-    // Not only the start action, but also the end action must get a weight of 1 before fading
-    // (concerning the start action this is already guaranteed in this place)
+    
     if (actionList.length <= 0){
         return;
     }
@@ -292,8 +278,8 @@ export function executeAnimationFlow(actionList, duration) {
         } else {
             currentBaseAction = "None";
         }
-
     }
+    
 }
 
 // This function is needed, since animationAction.crossFadeTo() disables its start action and sets

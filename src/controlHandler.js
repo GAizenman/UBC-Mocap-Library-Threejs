@@ -1,49 +1,61 @@
-import { showModel, showSkeleton, modifyTimeScale, executeAnimationFlow } from "./loadCharacter.js";
+import { 
+    showModel, showSkeleton, modifyTimeScale, executeAnimationFlow, 
+    unPauseAllActions, pauseAllActions, toSingleStepMode
+} from "./loadCharacter.js";
 
 const animationList = [];
+
+// if the show model is toggled
 window.showModelClicked = () => {
     let visibility = document.getElementById("showModel").checked;
     showModel(visibility);
 };
 
+// if the show skeleton is toggled
 window.showSkeletonClicked = () => {
     let visibility = document.getElementById("showSkeleton").checked;
     showSkeleton(visibility);
 };
 
-window.speedTextChanged = () => {
-    let speed = document.getElementById("speedText").value;
-    if (isNaN(speed)){
-        speed = 1;
-        document.getElementById("speedText").value = 1;
-    }
-    else if (speed < 0) {
-        speed = 0;
-        document.getElementById("speedText").value = 0;
-    }
-    else if (speed > 2) {
-        speed = 2;
-        document.getElementById("speedText").value = 2;
-    }
-    document.getElementById("speedRange").value = speed;
-    modifyTimeScale(speed);
-};
-
+// if the speed is changed, change the text and modify the time scale
 window.speedRangeChanged = () => {
     let speed = document.getElementById("speedRange").value;
-    document.getElementById("speedText").value = speed;
+    document.getElementById("speedText").innerText = speed;
     modifyTimeScale(speed);
 };
 
+// function to start playing animations through the list
 window.startFlow = () => {
     let actionList = [];
     for (let i = 0; i < animationList.length; i++) {
         actionList.push(animationList[i][1]);
     }
-    console.log(actionList);
+    
     executeAnimationFlow(actionList, 1);
 };
 
+// function to pause actions
+window.pause = () => {
+    pauseAllActions();
+};
+
+// function to play actions
+window.play = () => {
+    unPauseAllActions();
+};
+
+// if step amount is changed, change the text
+window.stepAmountChanged = () => {
+    let stepAmount = document.getElementById("stepRange").value;
+    document.getElementById("stepCount").innerText = stepAmount;
+};
+
+// function to play single step
+window.doSingleStep = () => {
+    toSingleStepMode(document.getElementById("stepRange").value);
+};
+
+// function to keep track of the list of animations in the flow
 export function addAnimation(animationName) {
     const listInput = [animationList.length, animationName];
     animationList.push(listInput);
@@ -62,6 +74,7 @@ export function addAnimation(animationName) {
         element.remove();
     });
 
+    // add the name for the animation in the list
     const descriptionElement = document.createElement("div");
     descriptionElement.className = "flow-list-text";
     descriptionElement.innerText = animationName;
