@@ -115,13 +115,16 @@ function animate() {
         // draw the scene
         const element = scene.userData.element;
 
+        // include height of the header
+        const mcHeader = document.getElementById("mocap-header").getBoundingClientRect();
+
         // get its position relative to the page's viewport
         const rect = element.getBoundingClientRect();
 
         // check if it's offscreen. If so skip it
         if (
             rect.bottom < 0 ||
-            rect.top > renderer.domElement.clientHeight ||
+            rect.top > renderer.domElement.clientHeight - mcHeader.bottom ||
             rect.right < 0 ||
             rect.left > renderer.domElement.clientWidth
         ) {
@@ -132,7 +135,7 @@ function animate() {
         const width = rect.right - rect.left;
         const height = rect.bottom - rect.top;
         const left = rect.left;
-        const bottom = renderer.domElement.clientHeight - rect.bottom;
+        const bottom = renderer.domElement.clientHeight - rect.bottom + mcHeader.bottom;
 
         renderer.setViewport(left, bottom, width, height);
         renderer.setScissor(left, bottom, width, height);

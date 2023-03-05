@@ -119,8 +119,6 @@ export function init(asset) {
     controls.target.set(0, 1, 0);
     controls.update();
 
-    stats = new Stats();
-    document.body.appendChild(stats.dom);
 
 }
 
@@ -340,10 +338,8 @@ function animate() {
         mixerUpdateDelta = sizeOfNextStep;
         sizeOfNextStep = 0;
     }
-    // Update the animation mixer, the stats panel, and render this frame
+    // Update the animation mixer and render this frame
     mixer.update(mixerUpdateDelta);
-
-    stats.update();
 
     renderer.render(scene, camera);
 }
