@@ -153,6 +153,20 @@ body {
   margin-top: 3px;
 }
 
+.step-button {
+  float: left; 
+  position: relative; 
+  margin-top: 3px;
+  margin-left: 2px;
+  padding: 3px;
+  border-radius: 5px;
+  border: 1px solid;
+}
+
+.step-button:hover {
+  box-shadow: 0 5px 8px 0 rgba(0,0,0,0.24),0 5px 8px 0 rgba(0,0,0,0.19);
+}
+
 .ranged-slider {
   position: relative;
   top: 0;
