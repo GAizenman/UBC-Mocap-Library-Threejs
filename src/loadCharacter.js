@@ -185,13 +185,8 @@ function prepareCrossFade(startAction, endAction, defaultDuration) {
     singleStepMode = false;
     unPauseAllActions();
 
-    // If the current action is 'Idle', execute the crossfade immediately;
-    // else wait until the current action has finished its current loop
-    if (currentBaseAction === "Idle" || !startAction || !endAction) {
-        executeCrossFade(startAction, endAction, duration);
-    } else {
-        synchronizeCrossFade(startAction, endAction, duration);
-    }
+   
+    synchronizeCrossFade(startAction, endAction, duration);
 
     // Update control colors
     if (endAction) {
@@ -257,6 +252,10 @@ export function executeAnimationFlow(actionList, duration) {
         return;
     }
 
+    actionList.forEach(function(action1) {
+        setWeight(baseActions[action1].action, 0);
+    });
+
     changeAction(actionList[0]);
 
     for (let i = 1; i < actionList.length; i++){
@@ -285,6 +284,12 @@ function setWeight(action, weight) {
     action.enabled = true;
     action.setEffectiveTimeScale(1);
     action.setEffectiveWeight(weight);
+}
+
+export function getWeight(actionList) {
+    actionList.forEach(function(action1) {
+        console.log( baseActions[action1].action.getEffectiveWeight());
+    });
 }
 
 function updateSize() {

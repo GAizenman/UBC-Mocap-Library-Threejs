@@ -1,6 +1,6 @@
 import { 
     showModel, showSkeleton, modifyTimeScale, executeAnimationFlow, 
-    unPauseAllActions, pauseAllActions, toSingleStepMode
+    unPauseAllActions, pauseAllActions, toSingleStepMode, getWeight
 } from "./loadCharacter.js";
 
 const animationList = [];
@@ -31,8 +31,17 @@ window.startFlow = () => {
         actionList.push(animationList[i][1]);
     }
     
-    executeAnimationFlow(actionList, 1);
+    executeAnimationFlow(actionList, 0.6);
 };
+
+window.printWeights = () => {
+    let actionList = [];
+    for (let i = 0; i < animationList.length; i++) {
+        actionList.push(animationList[i][1]);
+    }
+    
+    getWeight(actionList);
+}
 
 // function to pause actions
 window.pause = () => {
