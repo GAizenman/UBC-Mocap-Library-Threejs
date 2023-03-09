@@ -288,7 +288,7 @@ function setWeight(action, weight) {
 
 export function getWeight(actionList) {
     actionList.forEach(function(action1) {
-        console.log( baseActions[action1].action.getEffectiveWeight());
+        console.log( baseActions[action1].action.getEffectiveWeight(), ", ", action1);
     });
 }
 
