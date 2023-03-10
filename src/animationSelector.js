@@ -44,21 +44,26 @@ async function loadActions(asset) {
         element.className = "list-item";
 
         const sceneElement = document.createElement("div");
-        sceneElement.addEventListener("click", () => {
-            changeAction(anim.name);
-        });
+        const addButton = document.createElement("button");
+        addButton.innerText = "+";
+        sceneElement.appendChild(addButton);
         element.appendChild(sceneElement);
 
         const descriptionElement = document.createElement("div");
         descriptionElement.innerText = anim.name;
         element.appendChild(descriptionElement);
 
-        const addButton = document.createElement("button");
-        addButton.innerText = "+";
-        addButton.addEventListener("click", () => {
-            addAnimation(anim.name);
+        
+
+        element.addEventListener("click", function(e) {
+            var sender = e.target.tagName.toLowerCase();
+            if(sender === "button") {
+                addAnimation(anim.name);
+            }
+            else {
+                changeAction(anim.name);
+            }
         });
-        element.appendChild(addButton);
 
         // the element that represents the area we want to render the scene
         scene.userData.element = sceneElement;

@@ -55,30 +55,28 @@
             <div class="c">
                 <script type="module" src="./src/controlHandler.js"></script>
                 <div class="gui-title">
-                    <h1>Controls</h1>
+                    Controls
                 </div>
 
                 <div class="gui-section">
 
                     <!-- Visibility section -->
-                    <h2 style="margin-bottom: 8px;">Visibility:</h2>
+                    <h2 style="margin-bottom: 10px;">Visibility:</h2>
                     <label class="switch">
                         <input type="checkbox" id="showModel" onclick="showModelClicked()" checked></input>
                         <span class="dot round"></span>
-                    </label>
-                    <h3 style="float: left; margin-left: 5px; margin-top: 3px; margin-bottom: 10px;">Show Model</h3>
-                    <br><br><br>
+                    </label><g>Show Model</g>
+                    <br><br>
                     <label class="switch">
                         <input type="checkbox" id="showSkeleton" onclick="showSkeletonClicked()"></input>
                         <span class="dot round"></span>
-                    </label>
-                    <h3 style="float: left; margin-left: 5px; margin-top: 3px; margin-bottom: 10px;">Show Skeleton</h3>
-                    <br><br><br>
+                    </label><g>Show Skeleton</g>
+                    <br><br>
 
                     <!-- Speed section -->
                     <h2>Animation Speed:</h2>
-                    <button class="button button-play"><img src="./images/playIcon.png" style="width:20px;" onclick="play()" /></button>
-                    <button class="button button-play"><img src="./images/pauseIcon.png" style="width:20px;" onclick="pause()" /></button>
+                    <button class="button button-play"><img src="./images/playIcon.png" style="width:15px;" onclick="play()" /></button>
+                    <button class="button button-play"><img src="./images/pauseIcon.png" style="width:15px;" onclick="pause()" /></button>
                     <div class="ranged-slider">
                         <input style="float: left;" type="range" min="0.05" max="2" step="0.05" value="1" class="slider" id="speedRange" oninput="speedRangeChanged()">
                         <div id="speedText" style="float: left; margin-left: 5px; margin-top: 3px;">1</div><br><br>
@@ -95,10 +93,8 @@
 
                 <!-- Animation List section -->
                 <div class="gui-title">
-                    <h1>Animation Flow</h1>
-                    <button class="button button-play"><img src="./images/playIcon.png" style="width:20px;" onclick="startFlow()" /></button>
-                    <button class="button button-play"><img src="./images/pauseIcon.png" style="width:20px;" onclick="pause()"/></button>
-                    <button class="check-button" onclick="printWeights()">weights</button>
+                    Animation Flow<br>
+                    <button class="check-button" onclick="startFlow()">Play Flow</button>
                 </div>
                 <div id="animation-list">
                     

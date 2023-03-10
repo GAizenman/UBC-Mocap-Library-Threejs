@@ -90,30 +90,37 @@ body {
 .list-item {
   display: inline-block;
   margin: 10px;
-  padding: 1em;
+  border: solid;
+  border-width: thin;
   box-shadow: 1px 2px 4px 0px rgba(0, 0, 0, 0.25);
 }
 
 .list-item > div:nth-child(1) {
-  width: 200px;
-  height: 200px;
+  width: 150px;
+  height: 150px;
 }
 
-.list-item > div:nth-child(1):hover {
-  border: 1px solid;
+.list-item:hover {
   border-color: #2196F3;
 }
 
 .list-item > div:nth-child(2) {
   color: #000000;
   font-family: sans-serif;
-  font-size: large;
-  width: 200px;
+  font-size: 15px;
   text-align: left;
-  margin-top: 0.5em;
+  margin: 5px;
 }
-.list-item > div:nth-child(3) {
-  color: #1e832c;
+
+.list-item button {
+  border-style: none none solid solid;
+  border-width: thin;
+  float: right;
+}
+
+.list-item button:hover {
+  border-color: #2196F3;
+  border-width: 2px;
 }
 
 .box{
@@ -133,29 +140,39 @@ body {
   position: relative;
   padding-left: 0px;
   margin-left: 0px;
-  left: 20px;
-  font-size: 18px;
+  left: 15px;
+  font-size: 17px;
 }
 
 .gui-title {
   display: inline-block;
   text-decoration: underline;
+  font-weight: bold;
   /* margin: 1em; */
+  font-size: 25px;
   width: 100%;
-  padding-left: 1em;
-  padding-top: 3px;
-  padding-bottom: 3px;
+  padding-left: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25);
 }
 .gui-section {
   display: inline-block;
   /* margin: 1em; */
   width: 100%;
+  color: #000000;
+  font-family: sans-serif;
+  font-size: 15px;
   padding: 1em;
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25);
 }
+.gui-section g {
+  margin-left: 10px;
+  margin-bottom: 2px;
+}
 
 .gui-section h2 {
+  font-size: 18px;
   margin-bottom: 2px;
   margin-top: 3px;
 }
@@ -176,7 +193,11 @@ body {
 
 .ranged-slider {
   position: relative;
-  top: 0;
+  top: 0px;
+}
+
+.ranged-slider input {
+  width: 100px;
 }
 
 /* reference: https://www.w3schools.com/howto/howto_css_switch.asp */ 
@@ -184,8 +205,8 @@ body {
 .switch {
   position: relative;
   display: inline-block;
-  width: 45px;
-  height: 25px;
+  width: 30px;
+  height: 20px;
   float: left;
 }
 
@@ -212,10 +233,10 @@ body {
 .dot:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
-  left: 4px;
-  bottom: 4px;
+  height: 15px;
+  width: 15px;
+  left: 2px;
+  bottom: 3px;
   background-color: white;
   -webkit-transition: .4s;
   transition: .4s;
@@ -230,14 +251,14 @@ input:focus + .dot {
 }
 
 input:checked + .dot:before {
-  -webkit-transform: translateX(20px);
-  -ms-transform: translateX(20px);
-  transform: translateX(20px);
+  -webkit-transform: translateX(12px);
+  -ms-transform: translateX(12px);
+  transform: translateX(12px);
 }
 
 /* Rounded sliders */
 .dot.round {
-  border-radius: 34px;
+  border-radius: 10px;
 }
 
 .dot.round:before {
@@ -268,8 +289,13 @@ input:checked + .dot:before {
 
 .button-remove {
   position: relative;
+  border-style: solid;
+  border-width: thin;
   float: left;
-  text-align: left;
+}
+
+.button-remove:hover {
+  border-color: #2196F3;
 }
 
 /* header */
