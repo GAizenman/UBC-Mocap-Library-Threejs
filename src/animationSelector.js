@@ -107,11 +107,12 @@ function animate() {
 
     canvas.style.transform = `translateY(${scroller.scrollTop}px)`;
 
-
+    // background color of whole section
     renderer.setClearColor(0xffffff);
     renderer.setScissorTest(false);
     renderer.clear();
 
+    // background color animation selectors
     renderer.setClearColor(0xe0e0e0);
     renderer.setScissorTest(true);
 
@@ -128,6 +129,7 @@ function animate() {
         //make adjustments for header height
         if (
             rect.bottom < 0 ||
+            //change 61 if header size changes
             rect.top > renderer.domElement.clientHeight + 61 ||
             rect.right < 0 ||
             rect.left > renderer.domElement.clientWidth
@@ -139,6 +141,7 @@ function animate() {
         const width = rect.right - rect.left;
         const height = rect.bottom - rect.top;
         const left = rect.left;
+        //change 61 if header size changes
         const bottom = renderer.domElement.clientHeight - rect.bottom + 61;
 
         renderer.setViewport(left, bottom, width, height);

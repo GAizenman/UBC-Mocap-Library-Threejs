@@ -342,11 +342,33 @@ input:checked + .dot:before {
 /* Style the active/current link*/
 .header a.active {
   color: #ffffff;
+  font-weight: bold;
+  border-bottom: 5px solid #ffffff;
 }
 
 .header a.active:hover {
   background-color: #ddd;
   color: rgb(73, 73, 73);
+}
+
+.header2 {
+  overflow: hidden;
+  background-color: #6d6d6d;
+  height: 45px;
+  text-align: center;
+  /* color text */
+  color: #ffffff;
+  border-top: solid rgb(63, 63, 63);
+  border-bottom: solid rgb(63, 63, 63);
+}
+
+/* Style the header links */
+.header2 a {
+  color: rgb(255, 255, 255);
+  font-weight: bold;
+  font-size: 25px;
+  line-height: 40px;
+  text-decoration: underline;
 }
 
 /* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */

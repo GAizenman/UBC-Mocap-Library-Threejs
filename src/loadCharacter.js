@@ -246,8 +246,10 @@ function executeCrossFade(startAction, endAction, duration) {
     }
 }
 
+// function to run through animations in the list and blend them
 export function executeAnimationFlow(actionList, duration) {
     
+    // if nothing in the list, return
     if (actionList.length <= 0){
         return;
     }
@@ -256,6 +258,7 @@ export function executeAnimationFlow(actionList, duration) {
         setWeight(baseActions[action1].action, 0);
     });
 
+    // change to the first action
     changeAction(actionList[0]);
 
     for (let i = 1; i < actionList.length; i++){
