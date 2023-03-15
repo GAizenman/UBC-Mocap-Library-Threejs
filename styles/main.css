@@ -79,6 +79,7 @@ body {
   top: 0px;
   overflow-x: hidden;
   overflow-y: auto;
+  background-color: #232428;
 }
 
 .gutter {
@@ -106,7 +107,7 @@ body {
 }
 
 .list-item > div:nth-child(2) {
-  color: #ffffff;
+  color: #BBBBBB;
   font-family: "Inter", Sans-Serif;
   font-size: 15px;
   text-align: left;
@@ -148,8 +149,8 @@ body {
 
 .gui-title {
   display: inline-block;
-  text-decoration: underline;
   font-weight: bold;
+  color: #FFFFFF;
   /* margin: 1em; */
   font-size: 20px;
   width: 100%;
@@ -162,7 +163,7 @@ body {
   display: inline-block;
   /* margin: 1em; */
   width: 100%;
-  color: #000000;
+  color: #FFFFFF;
   font-family: "Inter", Sans-Serif;
   font-size: 13px;
   padding: 1em;
@@ -170,11 +171,13 @@ body {
 }
 .gui-section g {
   position: relative;
+  color: #BBBBBB;
   margin-left: 10px;
   top: 2px;
 }
 
 .gui-section h2 {
+  color: #BBBBBB;
   font-size: 15px;
   margin-bottom: 2px;
   margin-top: 3px;
@@ -361,6 +364,7 @@ input:checked + .dot:before {
   text-align: center;
   /* color text */
   color: #ffffff;
+  border-bottom: solid #111214;
   border-width: thin;
   box-shadow: 1px 2px 4px 0px rgba(0, 0, 0, 0.25);
 }
@@ -371,7 +375,6 @@ input:checked + .dot:before {
   font-weight: bold;
   font-size: 25px;
   line-height: 45px;
-  text-decoration: underline;
 }
 
 /* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */
