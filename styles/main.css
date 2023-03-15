@@ -102,6 +102,15 @@ body {
 .flow button {
   position: relative;
   margin-top: 15px;
+  cursor: pointer;
+  background-color: transparent;
+  border: solid #BBBBBB;
+  color: #BBBBBB;
+}
+
+.flow button:hover {
+  border-color: #1CEDC7;
+  color: #1CEDC7;
 }
 
 .gutter {
@@ -144,6 +153,7 @@ body {
   border-color: #111214;
   border-width: thin;
   float: right;
+  cursor: pointer;
   margin-right: 4px;
   margin-top: 3px;
 }
@@ -216,6 +226,25 @@ body {
 .gui-section img {
   position: relative;
   float: right;
+  cursor: pointer;
+}
+
+.gui-section-play img {
+  position: relative;
+  float: left;
+  cursor: pointer;
+}
+
+.gui-section button {
+  background-color: transparent;
+  color: #BBBBBB;
+  border: solid #BBBBBB;
+  cursor: pointer;
+}
+
+.gui-section button:hover {
+  border-color: #1CEDC7;
+  color: #1CEDC7;
 }
 
 .ranged-slider {
@@ -311,20 +340,12 @@ input:checked + .dot:before {
   transition-duration: 0.4s;
 }
 
+.button-play {
+  border-style: none;
+}
+
 .button-play:hover {
   box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
-}
-
-.button-remove {
-  position: relative;
-  background-color: transparent;
-  border-style:  none;
-  border-width: thin;
-  float: right;
-}
-
-.button-remove:hover {
-  border-color: #1CEDC7;
 }
 
 /* header */
