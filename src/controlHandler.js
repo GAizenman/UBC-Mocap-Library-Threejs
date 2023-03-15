@@ -26,9 +26,10 @@ window.speedRangeChanged = () => {
 
 // function to start playing animations through the list
 window.startFlow = () => {
+    let flowList = document.getElementsByClassName("flow-list-text");
     let actionList = [];
-    for (let i = 0; i < animationList.length; i++) {
-        actionList.push(animationList[i][1]);
+    for (let i = 0; i < flowList.length; i++) {
+        actionList.push(flowList[i].innerText);
     }
     
     executeAnimationFlow(actionList, 0.6);

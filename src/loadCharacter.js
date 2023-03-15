@@ -248,17 +248,11 @@ function executeCrossFade(startAction, endAction, duration) {
 
 // function to run through animations in the list and blend them
 export function executeAnimationFlow(actionList, duration) {
-
-    console.log(actionList);
     
     // if nothing in the list, return
     if (actionList.length <= 0){
         return;
     }
-
-    actionList.forEach(function(action1) {
-        setWeight(baseActions[action1].action, 0);
-    });
 
     // change to the first action
     changeAction(actionList[0]);

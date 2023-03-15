@@ -148,8 +148,7 @@ body {
 }
 
 .list-item button:hover {
-  border-color: #1CEDC7;
-  border-width: 2px;
+  color: #1CEDC7;
 }
 
 .box{
