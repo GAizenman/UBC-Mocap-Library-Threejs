@@ -123,7 +123,7 @@ body {
 }
 
 .list-item:hover {
-  border-color: #1CEDD4;
+  border-color: #1CEDC7;
 }
 
 .list-item > div:nth-child(2) {
@@ -148,7 +148,7 @@ body {
 }
 
 .list-item button:hover {
-  border-color: #1CEDD4;
+  border-color: #1CEDC7;
   border-width: 2px;
 }
 
@@ -221,7 +221,7 @@ body {
 .ranged-slider {
   position: relative;
   top: 0px;
-  accent-color: #1CEDD4;
+  accent-color: #1CEDC7;
 }
 
 .ranged-slider input {
@@ -271,11 +271,11 @@ body {
 }
 
 input:checked + .dot {
-  background-color: #1CEDD4;
+  background-color: #1CEDC7;
 }
 
 input:focus + .dot {
-  box-shadow: 0 0 1px #1CEDD4;
+  box-shadow: 0 0 1px #1CEDC7;
 }
 
 input:checked + .dot:before {
@@ -324,7 +324,7 @@ input:checked + .dot:before {
 }
 
 .button-remove:hover {
-  border-color: #1CEDD4;
+  border-color: #1CEDC7;
 }
 
 /* header */
@@ -372,7 +372,7 @@ input:checked + .dot:before {
 .header a.active {
   color: #ffffff;
   font-weight: bold;
-  border-bottom: 5px solid #1CEDD4;
+  border-bottom: 5px solid #1CEDC7;
 }
 
 .header a.active:hover {
