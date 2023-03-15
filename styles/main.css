@@ -322,7 +322,7 @@ input:checked + .dot:before {
   text-align: center;
   padding: 12px;
   text-decoration: none;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 25px;
   border-radius: 0px;
   margin-top: 5px;
@@ -364,7 +364,7 @@ input:checked + .dot:before {
   text-align: center;
   /* color text */
   color: #ffffff;
-  border-bottom: solid #111214;
+  border-bottom: solid #404249;
   border-width: thin;
   box-shadow: 1px 2px 4px 0px rgba(0, 0, 0, 0.25);
 }
@@ -374,7 +374,7 @@ input:checked + .dot:before {
   color: rgb(255, 255, 255);
   font-weight: bold;
   font-size: 25px;
-  line-height: 45px;
+  line-height: 50px;
 }
 
 /* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */
