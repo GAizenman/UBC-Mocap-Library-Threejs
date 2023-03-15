@@ -20,7 +20,7 @@ window.showSkeletonClicked = () => {
 // if the speed is changed, change the text and modify the time scale
 window.speedRangeChanged = () => {
     let speed = document.getElementById("speedRange").value;
-    document.getElementById("speedText").innerText = speed;
+    document.getElementById("speedText").innerText = speed + "x";
     modifyTimeScale(speed);
 };
 
