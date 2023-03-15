@@ -135,8 +135,11 @@ body {
 }
 
 .list-item button {
+  background-color: transparent;
+  color: white;
+  font-weight: bold;
   border-style: none none solid solid;
-  border-color: grey;
+  border-color: #111214;
   border-width: thin;
   float: right;
 }
@@ -251,7 +254,7 @@ body {
   height: 15px;
   width: 15px;
   left: 2px;
-  bottom: 3px;
+  bottom: 2px;
   background-color: white;
   -webkit-transition: .4s;
   transition: .4s;
@@ -266,9 +269,9 @@ input:focus + .dot {
 }
 
 input:checked + .dot:before {
-  -webkit-transform: translateX(12px);
-  -ms-transform: translateX(12px);
-  transform: translateX(12px);
+  -webkit-transform: translateX(10px);
+  -ms-transform: translateX(10px);
+  transform: translateX(10px);
 }
 
 /* Rounded sliders */
@@ -282,7 +285,7 @@ input:checked + .dot:before {
 
 /* button */
 .button {
-  background-color: #ffffff; /* white */
+  background-color: transparent; /* white */
   border: none;
   color: white;
   padding: 4px 4px 0px 4px;
@@ -304,7 +307,10 @@ input:checked + .dot:before {
 
 .button-remove {
   position: relative;
-  border-style: solid;
+  font-weight: bold;
+  background-color: transparent;
+  color: white;
+  border-style:  solid white;
   border-width: thin;
   float: left;
 }
