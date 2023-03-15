@@ -150,7 +150,7 @@ body {
   text-decoration: underline;
   font-weight: bold;
   /* margin: 1em; */
-  font-size: 25px;
+  font-size: 20px;
   width: 100%;
   padding-left: 10px;
   padding-top: 10px;
@@ -163,7 +163,7 @@ body {
   width: 100%;
   color: #000000;
   font-family: sans-serif;
-  font-size: 15px;
+  font-size: 13px;
   padding: 1em;
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25);
 }
@@ -173,7 +173,7 @@ body {
 }
 
 .gui-section h2 {
-  font-size: 18px;
+  font-size: 16px;
   margin-bottom: 2px;
   margin-top: 3px;
 }
@@ -354,7 +354,7 @@ input:checked + .dot:before {
 .header2 {
   overflow: hidden;
   background-color: #ffffff;
-  height: 45px;
+  height: 50px;
   text-align: center;
   /* color text */
   color: #151515;
@@ -369,7 +369,7 @@ input:checked + .dot:before {
   color: rgb(42, 42, 42);
   font-weight: bold;
   font-size: 25px;
-  line-height: 40px;
+  line-height: 45px;
   text-decoration: underline;
 }
 

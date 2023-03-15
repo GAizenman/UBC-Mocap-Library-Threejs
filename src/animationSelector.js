@@ -130,7 +130,7 @@ function animate() {
         if (
             rect.bottom < 0 ||
             //change 61 if header size changes
-            rect.top > renderer.domElement.clientHeight + 105 ||
+            rect.top > renderer.domElement.clientHeight + 110 ||
             rect.right < 0 ||
             rect.left > renderer.domElement.clientWidth
         ) {
@@ -142,7 +142,7 @@ function animate() {
         const height = rect.bottom - rect.top;
         const left = rect.left;
         //change 61 if header size changes
-        const bottom = renderer.domElement.clientHeight - rect.bottom + 105;
+        const bottom = renderer.domElement.clientHeight - rect.bottom + 110;
 
         renderer.setViewport(left, bottom, width, height);
         renderer.setScissor(left, bottom, width, height);
