@@ -108,12 +108,12 @@ function animate() {
     canvas.style.transform = `translateY(${scroller.scrollTop}px)`;
 
     // background color of whole section
-    renderer.setClearColor(0xffffff);
+    renderer.setClearColor(0x313338);
     renderer.setScissorTest(false);
     renderer.clear();
 
     // background color animation selectors
-    renderer.setClearColor(0xe0e0e0);
+    renderer.setClearColor(0x404249);
     renderer.setScissorTest(true);
 
     scenes.forEach(function (scene) {
