@@ -168,12 +168,13 @@ body {
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25);
 }
 .gui-section g {
+  position: relative;
   margin-left: 10px;
-  margin-bottom: 2px;
+  top: 2px;
 }
 
 .gui-section h2 {
-  font-size: 16px;
+  font-size: 15px;
   margin-bottom: 2px;
   margin-top: 3px;
 }
