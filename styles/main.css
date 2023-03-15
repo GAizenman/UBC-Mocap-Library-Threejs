@@ -82,12 +82,32 @@ body {
   background-color: #232428;
 }
 
+.flow {
+  color: #BBBBBB;
+  font-size: 15px;
+  margin-bottom: 2px;
+  margin-top: 3px;
+}
+
+.flow h2 {
+  color: #BBBBBB;
+  font-family: "Inter", Sans-Serif;
+  font-size: 15px;
+  margin-bottom: 5px;
+  margin-top: 20px;
+  margin-left: 5px;
+}
+
+.flow button {
+  position: relative;
+  margin-top: 15px;
+}
+
 .gutter {
   cursor: e-resize;
   height: 100%;
   background: #111214;
 }
-
 
 .list-item {
   display: inline-block;
@@ -141,10 +161,11 @@ body {
 
 .flow-list-text {
   position: relative;
+  color: #BBBBBB;
   padding-left: 0px;
   margin-left: 0px;
   left: 15px;
-  font-size: 17px;
+  font-size: 15px;
 }
 
 .gui-title {
@@ -159,6 +180,7 @@ body {
   padding-bottom: 10px;
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25);
 }
+
 .gui-section {
   display: inline-block;
   /* margin: 1em; */
@@ -169,6 +191,7 @@ body {
   padding: 1em;
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25);
 }
+
 .gui-section g {
   position: relative;
   color: #BBBBBB;
@@ -181,20 +204,6 @@ body {
   font-size: 15px;
   margin-bottom: 2px;
   margin-top: 3px;
-}
-
-.step-button {
-  float: left; 
-  position: relative; 
-  margin-top: 3px;
-  margin-left: 2px;
-  padding: 3px;
-  border-radius: 5px;
-  border: 1px solid;
-}
-
-.step-button:hover {
-  box-shadow: 0 5px 8px 0 rgba(0,0,0,0.24),0 5px 8px 0 rgba(0,0,0,0.19);
 }
 
 .ranged-slider {
@@ -364,8 +373,7 @@ input:checked + .dot:before {
   text-align: center;
   /* color text */
   color: #ffffff;
-  border: solid #111214;
-  border-width: thin;
+  border: solid #2b2d31 2px;
   box-shadow: 1px 2px 4px 0px rgba(0, 0, 0, 0.25);
 }
 
