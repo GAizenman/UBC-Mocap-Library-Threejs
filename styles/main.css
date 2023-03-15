@@ -12,7 +12,8 @@ body {
   /* style text */
   text-align: left;
   font-size: 13px;
-  font-family: Sans-Serif;
+  font-family: "Inter", Sans-Serif;
+  letter-spacing: 0.03em;
 
   /* color text */
   color: #000000;
@@ -106,7 +107,7 @@ body {
 
 .list-item > div:nth-child(2) {
   color: #000000;
-  font-family: sans-serif;
+  font-family: "Inter", Sans-Serif;
   font-size: 15px;
   text-align: left;
   margin: 5px;
@@ -162,7 +163,7 @@ body {
   /* margin: 1em; */
   width: 100%;
   color: #000000;
-  font-family: sans-serif;
+  font-family: "Inter", Sans-Serif;
   font-size: 13px;
   padding: 1em;
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25);
