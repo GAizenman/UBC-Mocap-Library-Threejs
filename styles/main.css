@@ -87,6 +87,7 @@ body {
   font-size: 15px;
   margin-bottom: 2px;
   margin-top: 3px;
+  margin-left: 10px;
 }
 
 .flow h2 {
@@ -168,7 +169,7 @@ body {
   position: relative;
   color: #BBBBBB;
   padding-left: 0px;
-  margin-left: 0px;
+  margin-left: 4px;
   float: left;
   left: 0px;
   font-size: 15px;
