@@ -318,7 +318,7 @@ input:checked + .dot:before {
 /* Style the header links */
 .header a {
   float: left;
-  color: rgb(255, 255, 255);
+  color: #BBBBBB;
   text-align: center;
   padding: 12px;
   text-decoration: none;
