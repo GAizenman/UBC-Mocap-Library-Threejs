@@ -75,9 +75,10 @@ export function addAnimation(animationName) {
     element.className = "gui-section";
 
     // make a remove button and remove from list and DOM
-    const removeButton = document.createElement("button");
-    removeButton.className = "button-remove";
-    removeButton.innerText = "-";
+    const removeButton = document.createElement("IMG");
+    removeButton.setAttribute("src", "./images/trash.png");
+    removeButton.setAttribute("width", "15");
+    removeButton.setAttribute("height", "15");
     removeButton.addEventListener("click", () => {
         removeAnimation(listInput);
         element.remove();
@@ -88,8 +89,8 @@ export function addAnimation(animationName) {
     descriptionElement.className = "flow-list-text";
     descriptionElement.innerText = animationName;
 
-    element.appendChild(removeButton);
     element.appendChild(descriptionElement);
+    element.appendChild(removeButton);
 
     content.appendChild(element);
 };
