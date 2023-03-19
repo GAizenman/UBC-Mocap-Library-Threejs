@@ -2,6 +2,7 @@ import * as THREE from "three";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 let canvas, scene, renderer, camera, stats;
 let model, skeleton, mixer, clock;
@@ -328,4 +329,56 @@ function animate() {
     mixer.update(mixerUpdateDelta);
 
     renderer.render(scene, camera);
+}
+
+
+// Download function
+export function download() {
+
+    const gltfExporter = new GLTFExporter();
+
+    gltfExporter.parse(
+        scene.children,
+        function ( result ) {
+
+            if ( result instanceof ArrayBuffer ) {
+                saveArrayBuffer( result, 'scene.glb' );
+            } else {
+                const output = JSON.stringify( result, null, 2 );
+                console.log( output );
+                saveString( output, 'scene.glb' );
+            }
+        },
+        function ( error ) {
+            console.log( 'An error happened during parsing', error );
+        },
+        {binary: true}
+    );
+
+}
+
+const link = document.createElement( 'a' );
+link.style.display = 'none';
+document.body.appendChild( link ); // Firefox workaround, see #6594
+
+function save( blob, filename ) {
+
+    link.href = URL.createObjectURL( blob );
+    link.download = filename;
+    link.click();
+    // URL.revokeObjectURL( url ); breaks Firefox...
+
+}
+
+function saveString( text, filename ) {
+
+    save( new Blob( [ text ], { type: 'text/plain' } ), filename );
+
+}
+
+
+function saveArrayBuffer( buffer, filename ) {
+
+    save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+
 }

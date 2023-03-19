@@ -63,6 +63,7 @@
                 <script type="module" src="./src/controlHandler.js"></script>
                 <div class="gui-title">
                     Controls
+                    <img src="./images/downloadIcon.png" style="width:22px;" onclick="downloader()" />
                 </div>
 
                 <div class="gui-section">
@@ -124,6 +125,55 @@
                 minSize: [250,300,220]
             });
         </script>
-        
+
+        <!-- code for download popup -->
+        <!-- Reference: https://www.loginradius.com/blog/engineering/simple-popup-tutorial/ -->
+        <div id="overlay"></div>
+        <div id="popup">
+            <!-- popup header -->
+            <div class="popupcontrols">
+                <span id="popupclose">X</span>
+            </div>
+            <div class="popuptitle">
+                <h1>Download Model:</h1>
+            </div>
+
+            <!-- popup content -->
+            <div class="popup-content">
+                <div class="popup-content-left">
+                    <p1>Format:</p1>
+                    <br>
+                    <select name="format" id="format">
+                        <option value="glb">.glb (binary)</option>
+                        <option value="gltf">.gltf (JSON)</option>
+                    </select>
+                    <br><br><br>
+                    <p1>Frames Per Second:</p1>
+                    <br>
+                    <select name="fps" id="fps">
+                        <option value="30">30 fps</option>
+                    </select>
+                </div>
+                <div class="popup-content-right">
+                    <p1>Model:</p1>
+                    <br>
+                    <select name="model" id="model">
+                        <option value="with-model">With Model</option>
+                    </select>
+                    <br><br><br>
+                    <p1>Key Frame Reduction:</p1>
+                    <br>
+                    <select name="kfr" id="kfr">
+                        <option value="none">None</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- popup footer -->
+            <div class="popup-footer">
+                <button id="cancel-button" style="float: left;" onclick="">CANCEL</button>
+                <button id="download-button" style="float: right; font-weight: bold;" onclick="">DOWNLOAD</button>
+            </div>
+        </div>
     </body>
 </html>

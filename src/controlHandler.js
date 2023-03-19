@@ -1,6 +1,7 @@
 import { 
     showModel, showSkeleton, modifyTimeScale, executeAnimationFlow, 
-    unPauseAllActions, pauseAllActions, toSingleStepMode, getWeight
+    unPauseAllActions, pauseAllActions, toSingleStepMode, getWeight,
+    download
 } from "./loadCharacter.js";
 
 const animationList = [];
@@ -43,6 +44,40 @@ window.printWeights = () => {
     
     getWeight(actionList);
 }
+
+// function when download button is clicked
+window.downloader = () => {
+    // Initialize Variables
+    var closePopup = document.getElementById("popupclose");
+    var overlay = document.getElementById("overlay");
+    var popup = document.getElementById("popup");
+    var cancelButton = document.getElementById("cancel-button");
+    var downloadButton = document.getElementById("download-button");
+
+
+    //make popup window visible
+    overlay.style.display = 'inline-block';
+    popup.style.display = 'inline-block';
+ 
+    // Close Popup Event
+    closePopup.onclick = function() {
+        overlay.style.display = 'none';
+        popup.style.display = 'none';
+    };
+    
+    // Cancel button event
+    cancelButton.onclick = function() {
+        overlay.style.display = 'none';
+        popup.style.display = 'none';
+    };
+
+    // Download button event
+    downloadButton.onclick = function() {
+        download();
+        overlay.style.display = 'none';
+        popup.style.display = 'none';
+    };
+};
 
 // function to pause actions
 window.pause = () => {
