@@ -10,6 +10,7 @@
             name="viewport"
             content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
         />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
         <link rel="stylesheet" href="./styles/main.css" />
     </head>
     <body>
@@ -26,44 +27,153 @@
             }
         </script>
 
-        <!-- Left Side Selector -->
+        <!-- header section -->
+        <div class="header" id="mocap-header">
+            <img src="./images/logo.png" alt="logo"/>
+            <a class="active" href="./index.html">Animation Studio</a>
+            <a href="./index.html">About Us</a>
+        </div>
+
+        <!-- header2 placeholder section, change numbers in animationSelector to 105 when you add this-->
+        <div class="header2" id="search-header">
+            <a>Animation Studio</a>
+        </div>
+        
+
         <!-- Reference: https://redstapler.co/split-js-tutorial-website-split-screen-effect/-->
         <div class="split-content">
+
+            <!-- Left Side Selector -->
             <div class="a" id="selector-side">
                 <canvas id="canvas-left"></canvas>
                 <div id="content"></div>
     
                 <script type="module" src="./index.js"></script>
             </div>
-
+            
+            <!-- animation middle part -->
             <div class="b">
                 <canvas id="canvas-right"></canvas>
                 
                 <script type="module" src="./index2.js"></script>
             </div>
+
+            <!-- GUI part -->
+            <div class="c">
+                <script type="module" src="./src/controlHandler.js"></script>
+                <div class="gui-title">
+                    Controls
+                    <img src="./images/downloadIcon.png" style="width:22px;" onclick="downloader()" />
+                </div>
+
+                <div class="gui-section">
+
+                    <!-- Visibility section -->
+                    <h2 style="margin-bottom: 10px;">Visibility:</h2>
+                    <label class="switch">
+                        <input type="checkbox" id="showModel" onclick="showModelClicked()" checked></input>
+                        <span class="dot round"></span>
+                    </label><g>Show Model</g>
+                    <br><br>
+                    <label class="switch">
+                        <input type="checkbox" id="showSkeleton" onclick="showSkeletonClicked()"></input>
+                        <span class="dot round"></span>
+                    </label><g>Show Skeleton</g>
+                    <br><br>
+
+                    <!-- Speed section -->
+                    <h2>Animation Speed:</h2>
+                    <div class="ranged-slider">
+                        <input style="float: left;" type="range" min="0.05" max="2" step="0.05" value="1" class="slider" id="speedRange" oninput="speedRangeChanged()">
+                        <div id="speedText" style="float: left; margin-left: 5px; margin-top: 3px;">1x</div><br><br>
+                    </div>
+
+                    <!-- Step section -->
+                    <h2>Step Amount:</h2>
+                    <div class="ranged-slider">
+                        <input style="float: left; color: #62DDE4;" type="range" min="0.01" max="0.15" step="0.01" value="0.05" class="slider" id="stepRange" oninput="stepAmountChanged()">
+                        <div id="stepCount" style="float: left; margin-left: 5px; margin-top: 3px;">0.05</div><br><br>
+                    </div>
+                    <button class="check-button" onclick="doSingleStep()">Single Step</button>
+                    <br><br><br>
+                    <div class="gui-section-play"><img src="./images/playIcon.png" style="width:30px;" onclick="play()" /></div>
+                    <div class="gui-section-play"><img src="./images/pauseIcon.png" style="width:30px;" onclick="pause()" /></div>
+                </div>
+
+                <!-- Animation List section -->
+                <div class="gui-title">
+                    Animation Flow<br>
+                </div>
+                <div class="flow">
+                    <button class="check-button" style="margin-left: 5px;" onclick="startFlow()">Play Flow</button>
+                    <br>
+                    <h2>Animation Sequence:</h2>
+                </div>
+                
+                <div id="animation-list">
+                    
+                </div>
+            </div>
+
+           
         </div>
 
         <script>
-            Split(['.a', '.b'], {
+            Split(['.a', '.b', '.c'], {
                 gutterSize: 5,
-                sizes: [50,50]
+                sizes: [36,49,15],
+                minSize: [250,300,220]
             });
-        </script>>
-        
+        </script>
+
+        <!-- code for download popup -->
+        <!-- Reference: https://www.loginradius.com/blog/engineering/simple-popup-tutorial/ -->
+        <div id="overlay"></div>
+        <div id="popup">
+            <!-- popup header -->
+            <div class="popupcontrols">
+                <span id="popupclose">X</span>
+            </div>
+            <div class="popuptitle">
+                <h1>Download Model:</h1>
+            </div>
+
+            <!-- popup content -->
+            <div class="popup-content">
+                <div class="popup-content-left">
+                    <p1>Format:</p1>
+                    <br>
+                    <select name="format" id="format">
+                        <option value="glb">.glb (binary)</option>
+                        <option value="gltf">.gltf (JSON)</option>
+                    </select>
+                    <br><br><br>
+                    <p1>Frames Per Second:</p1>
+                    <br>
+                    <select name="fps" id="fps">
+                        <option value="30">30 fps</option>
+                    </select>
+                </div>
+                <div class="popup-content-right">
+                    <p1>Model:</p1>
+                    <br>
+                    <select name="model" id="model">
+                        <option value="with-model">With Model</option>
+                    </select>
+                    <br><br><br>
+                    <p1>Key Frame Reduction:</p1>
+                    <br>
+                    <select name="kfr" id="kfr">
+                        <option value="none">None</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- popup footer -->
+            <div class="popup-footer">
+                <button id="cancel-button" style="float: left;" onclick="">CANCEL</button>
+                <button id="download-button" style="float: right; font-weight: bold;" onclick="">DOWNLOAD</button>
+            </div>
+        </div>
     </body>
 </html>
-
-
-    <!--
-        <div class="content-column">
-            <canvas id="canvas-left"></canvas>
-            <div id="content"></div>
-
-            <script type="module" src="./index.js"></script>
-        </div>
-
-        <div class="animation-column">
-            <canvas id="canvas-right"></canvas>
-            <script type="module" src="./index2.js"></script>
-        </div>
-    -->

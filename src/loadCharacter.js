@@ -1,14 +1,11 @@
 import * as THREE from "three";
 
-import Stats from "three/addons/libs/stats.module.js";
-import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 let canvas, scene, renderer, camera, stats;
 let model, skeleton, mixer, clock;
-
-const crossFadeControls = [];
 
 let currentBaseAction = "Idle";
 const allActions = [];
@@ -85,7 +82,10 @@ export function init(asset) {
             allActions.push(action);
         }
 
-        createPanel();
+        panelSettings = {
+            "use default duration": true,
+            "set custom duration": 0.6,
+        };
 
         animate();
     });
@@ -110,65 +110,6 @@ export function init(asset) {
     controls.target.set(0, 1, 0);
     controls.update();
 
-    stats = new Stats();
-    document.body.appendChild(stats.dom);
-
-}
-
-function createPanel() {
-    const panel = new GUI({ width: 250 });
-
-    const folder1 = panel.addFolder("Visibility");
-    const folder2 = panel.addFolder("Pausing/Stepping");
-    const folder3 = panel.addFolder("Base Actions");
-    const folder4 = panel.addFolder("General Speed");
-
-    panelSettings = {
-        "show model": true,
-        "show skeleton": false,
-        "pause/continue": pauseContinue,
-        "make single step": toSingleStepMode,
-        "modify step size": 0.05,
-        "use default duration": true,
-        "set custom duration": 0.6,
-        "modify time scale": 1.0
-    };
-    folder1.add(panelSettings, "show model").onChange(showModel);
-    folder1.add(panelSettings, "show skeleton").onChange(showSkeleton);
-    folder2.add(panelSettings, "pause/continue");
-    folder2.add(panelSettings, "make single step");
-    folder2.add(panelSettings, "modify step size", 0.01, 0.1, 0.001);
-    folder3.add(panelSettings, "use default duration");
-    folder3.add(panelSettings, "set custom duration", 0, 10, 0.01);
-
-    const baseNames = ["None", ...Object.keys(baseActions)];
-
-    for (let i = 0, l = baseNames.length; i !== l; ++i) {
-        const name = baseNames[i];
-        const settings = baseActions[name];
-        panelSettings[name] = function () {
-            const currentSettings = baseActions[currentBaseAction];
-            const currentAction = currentSettings
-                ? currentSettings.action
-                : null;
-            const action = settings ? settings.action : null;
-
-            if (currentAction !== action) {
-                prepareCrossFade(currentAction, action, 0.6);
-            }
-        };
-
-        crossFadeControls.push(folder3.add(panelSettings, name));
-    }
-
-    folder4
-        .add(panelSettings, "modify time scale", 0.0, 1.5, 0.01)
-        .onChange(modifyTimeScale);
-
-    folder1.open();
-    folder2.open();
-    folder3.open();
-    folder4.open();
 
 }
 
@@ -182,45 +123,59 @@ function activateAction(action) {
     action.play();
 }
 
-function showModel(visibility) {
+export function showModel(visibility) {
     model.visible = visibility;
 }
 
-function showSkeleton(visibility) {
+export function showSkeleton(visibility) {
     skeleton.visible = visibility;
 }
 
-function modifyTimeScale(speed) {
+// if speed is changed, change the time scale
+export function modifyTimeScale(speed) {
     mixer.timeScale = speed;
 }
-function pauseContinue() {
-    if (singleStepMode) {
-        singleStepMode = false;
-        unPauseAllActions();
-    } else {
-        if (baseActions[currentBaseAction].action.paused) {
-            unPauseAllActions();
-        } else {
-            pauseAllActions();
-        }
-    }
-}
-function pauseAllActions() {
+
+export function pauseAllActions() {
     allActions.forEach(function (action) {
         action.paused = true;
     });
 }
 
-function unPauseAllActions() {
+export function unPauseAllActions() {
+    singleStepMode = false;
     allActions.forEach(function (action) {
         action.paused = false;
     });
 }
-function toSingleStepMode() {
+
+// set single step mode if single step is clicked
+export function toSingleStepMode(stepSize) {
     unPauseAllActions();
 
     singleStepMode = true;
-    sizeOfNextStep = panelSettings["modify step size"];
+    sizeOfNextStep = stepSize;
+}
+
+// function for onClick for selector page
+export function changeAction(name) {
+    // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
+    singleStepMode = false;
+    unPauseAllActions();
+
+    const startAction = baseActions[currentBaseAction].action;
+    const endAction = baseActions[name].action;
+
+    // Change the animation
+    executeCrossFade(startAction, endAction, 0);
+
+    // Update control colors
+    if (endAction) {
+        const clip = endAction.getClip();
+        currentBaseAction = clip.name;
+    } else {
+        currentBaseAction = "None";
+    }
 }
 
 function prepareCrossFade(startAction, endAction, defaultDuration) {
@@ -231,13 +186,8 @@ function prepareCrossFade(startAction, endAction, defaultDuration) {
     singleStepMode = false;
     unPauseAllActions();
 
-    // If the current action is 'Idle', execute the crossfade immediately;
-    // else wait until the current action has finished its current loop
-    if (currentBaseAction === "Idle" || !startAction || !endAction) {
-        executeCrossFade(startAction, endAction, duration);
-    } else {
-        synchronizeCrossFade(startAction, endAction, duration);
-    }
+   
+    synchronizeCrossFade(startAction, endAction, duration);
 
     // Update control colors
     if (endAction) {
@@ -297,6 +247,36 @@ function executeCrossFade(startAction, endAction, duration) {
     }
 }
 
+// function to run through animations in the list and blend them
+export function executeAnimationFlow(actionList, duration) {
+    
+    // if nothing in the list, return
+    if (actionList.length <= 0){
+        return;
+    }
+
+    // change to the first action
+    changeAction(actionList[0]);
+
+    for (let i = 1; i < actionList.length; i++){
+
+        const startAction = baseActions[currentBaseAction].action;
+        const endAction = baseActions[actionList[i]].action;
+
+        // Change the animation
+        prepareCrossFade(startAction, endAction, duration);
+
+        // Update control colors
+        if (endAction) {
+            const clip = endAction.getClip();
+            currentBaseAction = clip.name;
+        } else {
+            currentBaseAction = "None";
+        }
+    }
+    
+}
+
 // This function is needed, since animationAction.crossFadeTo() disables its start action and sets
 // the start action's timeScale to ((start animation's duration) / (end animation's duration))
 
@@ -304,6 +284,12 @@ function setWeight(action, weight) {
     action.enabled = true;
     action.setEffectiveTimeScale(1);
     action.setEffectiveWeight(weight);
+}
+
+export function getWeight(actionList) {
+    actionList.forEach(function(action1) {
+        console.log( baseActions[action1].action.getEffectiveWeight(), ", ", action1);
+    });
 }
 
 function updateSize() {
@@ -339,10 +325,60 @@ function animate() {
         mixerUpdateDelta = sizeOfNextStep;
         sizeOfNextStep = 0;
     }
-    // Update the animation mixer, the stats panel, and render this frame
+    // Update the animation mixer and render this frame
     mixer.update(mixerUpdateDelta);
 
-    stats.update();
-
     renderer.render(scene, camera);
+}
+
+
+// Download function
+export function download() {
+
+    const gltfExporter = new GLTFExporter();
+
+    gltfExporter.parse(
+        scene.children,
+        function ( result ) {
+
+            if ( result instanceof ArrayBuffer ) {
+                saveArrayBuffer( result, 'scene.glb' );
+            } else {
+                const output = JSON.stringify( result, null, 2 );
+                console.log( output );
+                saveString( output, 'scene.glb' );
+            }
+        },
+        function ( error ) {
+            console.log( 'An error happened during parsing', error );
+        },
+        {binary: true}
+    );
+
+}
+
+const link = document.createElement( 'a' );
+link.style.display = 'none';
+document.body.appendChild( link ); // Firefox workaround, see #6594
+
+function save( blob, filename ) {
+
+    link.href = URL.createObjectURL( blob );
+    link.download = filename;
+    link.click();
+    // URL.revokeObjectURL( url ); breaks Firefox...
+
+}
+
+function saveString( text, filename ) {
+
+    save( new Blob( [ text ], { type: 'text/plain' } ), filename );
+
+}
+
+
+function saveArrayBuffer( buffer, filename ) {
+
+    save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+
 }

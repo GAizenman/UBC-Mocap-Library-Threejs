@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
+import { changeAction } from "./loadCharacter.js";
+import { addAnimation } from "./controlHandler.js";
 
 
 let canvas, renderer, clock, model, scroller;
@@ -42,18 +44,26 @@ async function loadActions(asset) {
         element.className = "list-item";
 
         const sceneElement = document.createElement("div");
+        const addButton = document.createElement("button");
+        addButton.innerText = "+";
+        sceneElement.appendChild(addButton);
         element.appendChild(sceneElement);
 
         const descriptionElement = document.createElement("div");
         descriptionElement.innerText = anim.name;
         element.appendChild(descriptionElement);
 
-        const addButton = document.createElement("button");
-        addButton.innerText = "+";
-        addButton.addEventListener("click", () => {
-            console.log(anim.name);
+        
+
+        element.addEventListener("click", function(e) {
+            var sender = e.target.tagName.toLowerCase();
+            if(sender === "button") {
+                addAnimation(anim.name);
+            }
+            else {
+                changeAction(anim.name);
+            }
         });
-        element.appendChild(addButton);
 
         // the element that represents the area we want to render the scene
         scene.userData.element = sceneElement;
@@ -77,9 +87,7 @@ async function loadActions(asset) {
         scenes.push(scene);
     });
 }
-function addButtonClicked() {
-    console.log("ADD to viewport list of animations");
-}
+
 function updateSize() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
@@ -99,12 +107,13 @@ function animate() {
 
     canvas.style.transform = `translateY(${scroller.scrollTop}px)`;
 
-
-    renderer.setClearColor(0xffffff);
+    // background color of whole section
+    renderer.setClearColor(0x313338);
     renderer.setScissorTest(false);
     renderer.clear();
 
-    renderer.setClearColor(0xe0e0e0);
+    // background color animation selectors
+    renderer.setClearColor(0x404249);
     renderer.setScissorTest(true);
 
     scenes.forEach(function (scene) {
@@ -112,13 +121,16 @@ function animate() {
         // draw the scene
         const element = scene.userData.element;
 
+
         // get its position relative to the page's viewport
         const rect = element.getBoundingClientRect();
 
         // check if it's offscreen. If so skip it
+        //make adjustments for header height
         if (
             rect.bottom < 0 ||
-            rect.top > renderer.domElement.clientHeight ||
+            //change 61 if header size changes
+            rect.top > renderer.domElement.clientHeight + 110 ||
             rect.right < 0 ||
             rect.left > renderer.domElement.clientWidth
         ) {
@@ -129,7 +141,8 @@ function animate() {
         const width = rect.right - rect.left;
         const height = rect.bottom - rect.top;
         const left = rect.left;
-        const bottom = renderer.domElement.clientHeight - rect.bottom;
+        //change 61 if header size changes
+        const bottom = renderer.domElement.clientHeight - rect.bottom + 110;
 
         renderer.setViewport(left, bottom, width, height);
         renderer.setScissor(left, bottom, width, height);
