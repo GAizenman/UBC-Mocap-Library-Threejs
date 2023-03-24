@@ -36,6 +36,8 @@
 
         <!-- header2 placeholder section, change numbers in animationSelector to 105 when you add this-->
         <div class="header2" id="search-header">
+            <input type="search" id="site-search" name="searchBar" placeholder="Search…">
+            <img src="./images/searchIcon.png" style="width:18px;" onclick="" />
             <a>Animation Studio</a>
         </div>
         
@@ -101,17 +103,19 @@
                 </div>
 
                 <!-- Animation List section -->
-                <div class="gui-title">
-                    Animation Flow<br>
-                </div>
-                <div class="flow">
-                    <button class="check-button" style="margin-left: 5px;" onclick="startFlow()">Play Flow</button>
-                    <br>
-                    <h2>Animation Sequence:</h2>
-                </div>
-                
-                <div id="animation-list">
+                <div class="flow-list">
+                    <div class="gui-title">
+                        Animation Flow<br>
+                    </div>
+                    <div class="flow">
+                        <button class="check-button" style="margin-left: 5px;" onclick="startFlow()">Play Flow</button>
+                        <br>
+                        <h2>Animation Sequence:</h2>
+                    </div>
                     
+                    <div id="animation-list">
+                        
+                    </div>
                 </div>
             </div>
 

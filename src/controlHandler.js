@@ -102,8 +102,6 @@ window.doSingleStep = () => {
 
 // function to keep track of the list of animations in the flow
 export function addAnimation(animationName) {
-    const listInput = [animationList.length, animationName];
-    animationList.push(listInput);
 
     const content = document.getElementById("animation-list");
     // make a list item
@@ -116,7 +114,7 @@ export function addAnimation(animationName) {
     removeButton.setAttribute("width", "15");
     removeButton.setAttribute("height", "15");
     removeButton.addEventListener("click", () => {
-        removeAnimation(listInput);
+        removeAnimation(animationName);
         element.remove();
     });
 
