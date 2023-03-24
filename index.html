@@ -68,7 +68,7 @@
                     <img src="./images/downloadIcon.png" style="width:22px;" onclick="downloader()" />
                 </div>
 
-                <div class="gui-section">
+                <div class="gui-section" style="animation-name: none;">
 
                     <!-- Visibility section -->
                     <h2 style="margin-bottom: 10px;">Visibility:</h2>
@@ -98,8 +98,7 @@
                     </div>
                     <button class="check-button" onclick="doSingleStep()">Single Step</button>
                     <br><br><br>
-                    <div class="gui-section-play"><img src="./images/playIcon.png" style="width:30px;" onclick="play()" /></div>
-                    <div class="gui-section-play"><img src="./images/pauseIcon.png" style="width:30px;" onclick="pause()" /></div>
+                    <div class="gui-section-play"><img id="playButton" src="./images/pauseIcon.png" style="width:30px;" onclick="pausePlayButtonClicked()" /></div>
                 </div>
 
                 <!-- Animation List section -->

@@ -187,6 +187,14 @@ body {
   float: left;
   left: 0px;
   font-size: 15px;
+  animation-name: colorChanger;
+  animation-duration: 2s;
+}
+
+/* The animation code */
+@keyframes colorChanger {
+  from {color: #1CEDC7;}
+  to {color: #BBBBBB;}
 }
 
 .gui-title {
@@ -210,6 +218,12 @@ body {
   margin-right: 15px;
 }
 
+/* The animation code */
+@keyframes shadowChanger {
+  from {box-shadow: 1px 2px 1px 1px #1CEDC7;}
+  to {box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25)}
+}
+
 .gui-section {
   display: inline-block;
   /* margin: 1em; */
@@ -219,6 +233,8 @@ body {
   font-size: 13px;
   padding: 1em;
   box-shadow: 1px 2px 1px 1px rgba(0, 0, 0, 0.25);
+  animation-name: shadowChanger;
+  animation-duration: 2s;
 }
 
 .gui-section g {
@@ -430,6 +446,7 @@ input:checked + .dot:before {
   font-weight: bold;
   font-size: 25px;
   line-height: 50px;
+  margin-right: 275px;
 }
 .header2 img{
   float: left;
@@ -485,6 +502,7 @@ input:checked + .dot:before {
   top: 50%;
   left: 50%;
   background: #111214;
+  border-radius: 5px;
   color: #ffffff;
   width: 500px;
   margin-left: -250px; /*Half the value of width to center div*/

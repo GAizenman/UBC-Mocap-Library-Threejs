@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { changeAction } from "./loadCharacter.js";
-import { addAnimation } from "./controlHandler.js";
+import { addAnimation, changeButtonToPause } from "./controlHandler.js";
 
 
 let canvas, renderer, clock, model, scroller;
@@ -61,6 +61,7 @@ async function loadActions(asset) {
                 addAnimation(anim.name);
             }
             else {
+                changeButtonToPause();
                 changeAction(anim.name);
             }
         });
@@ -130,7 +131,7 @@ function animate() {
         if (
             rect.bottom < 0 ||
             //change 61 if header size changes
-            rect.top > renderer.domElement.clientHeight + 112 ||
+            rect.top > renderer.domElement.clientHeight + 111 ||
             rect.right < 0 ||
             rect.left > renderer.domElement.clientWidth
         ) {
@@ -142,7 +143,7 @@ function animate() {
         const height = rect.bottom - rect.top;
         const left = rect.left;
         //change 61 if header size changes
-        const bottom = renderer.domElement.clientHeight - rect.bottom + 112;
+        const bottom = renderer.domElement.clientHeight - rect.bottom + 111;
 
         renderer.setViewport(left, bottom, width, height);
         renderer.setScissor(left, bottom, width, height);
