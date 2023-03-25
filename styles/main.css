@@ -19,6 +19,19 @@ body {
   color: #000000;
 }
 
+::-webkit-scrollbar {
+  width: 8px;               /* width of the entire scrollbar */
+}
+
+.a::-webkit-scrollbar-track {
+  background: #313338;        /* color of the tracking area */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #BBBBBB;    /* color of the scroll thumb */
+  border-radius: 20px;       /* roundness of the scroll thumb */
+}
+
 /* content and split divs */
 
 #content {
@@ -265,6 +278,7 @@ body {
 
 .gui-section-play g img {
   float: right;
+  margin-right: 5px;
   margin-top: 2px;
 }
 
@@ -461,7 +475,7 @@ input:checked + .dot:before {
 .header2 input{
   text-align: left;
   float: left;
-  margin-top: 15px;
+  margin-top: 13px;
   margin-left: 20px;
   border-radius: 3px;
   background-color: #313338;
@@ -470,6 +484,7 @@ input:checked + .dot:before {
   font-size: 13px;
   border: solid 1px black;
   width: 250px;
+  height: 23px;
 }
 
 .header2 input:hover{
