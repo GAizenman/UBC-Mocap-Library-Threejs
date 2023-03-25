@@ -263,6 +263,11 @@ body {
   cursor: pointer;
 }
 
+.gui-section-play g img {
+  float: right;
+  margin-top: 2px;
+}
+
 .gui-section button {
   background-color: transparent;
   color: #BBBBBB;

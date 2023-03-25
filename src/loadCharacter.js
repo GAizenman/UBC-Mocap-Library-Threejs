@@ -260,8 +260,6 @@ export function executeAnimationFlow(actionList, duration) {
 
     for (let i = 1; i < actionList.length; i++){
 
-        console.log(i);
-
         const startAction = baseActions[actionList[i-1]].action;
         const endAction = baseActions[actionList[i]].action;
 
