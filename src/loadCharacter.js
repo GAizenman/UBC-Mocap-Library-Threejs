@@ -2,12 +2,13 @@ import * as THREE from "three";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 let canvas, scene, renderer, camera, stats;
 let model, skeleton, mixer, clock;
 
-let currentBaseAction = "Idle";
+let currentBaseAction = "Female_Default|Walking";
 const allActions = [];
 let baseActions = {
     Idle: { weight: 1 }
@@ -24,27 +25,24 @@ export function init(asset) {
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xa0a0a0);
-    scene.fog = new THREE.Fog(0xa0a0a0, 10, 50);
+    scene.fog = new THREE.Fog(0xa0a0a0, 1000, 3000);
 
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
-    hemiLight.position.set(0, 20, 0);
-    scene.add(hemiLight);
+    const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
+    hemiLight.position.set( 0, 400, 0 );
+    scene.add( hemiLight );
 
-    const dirLight = new THREE.DirectionalLight(0xffffff);
-    dirLight.position.set(3, 10, 10);
+    const dirLight = new THREE.DirectionalLight( 0xffffff );
+    dirLight.position.set( 0, 300, 200 );
     dirLight.castShadow = true;
-    dirLight.shadow.camera.top = 2;
-    dirLight.shadow.camera.bottom = -2;
-    dirLight.shadow.camera.left = -2;
-    dirLight.shadow.camera.right = 2;
-    dirLight.shadow.camera.near = 0.1;
-    dirLight.shadow.camera.far = 40;
-    scene.add(dirLight);
-
+    dirLight.shadow.camera.top = 180;
+    dirLight.shadow.camera.bottom = - 100;
+    dirLight.shadow.camera.left = - 120;
+    dirLight.shadow.camera.right = 120;
+    scene.add( dirLight );
     // ground
 
     const mesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(100, 100),
+        new THREE.PlaneGeometry(5000, 5000),
         new THREE.MeshPhongMaterial({
             color: 0x999999,
             depthWrite: false
@@ -54,9 +52,15 @@ export function init(asset) {
     mesh.receiveShadow = true;
     scene.add(mesh);
 
-    const loader = new GLTFLoader();
-    loader.load(asset, function (gltf) {
-        model = gltf.scene;
+    // grid
+    const grid = new THREE.GridHelper( 5000, 40, 0x000000, 0x000000 );
+    grid.material.opacity = 0.2;
+    grid.material.transparent = true;
+    scene.add( grid );
+
+    const loader = new FBXLoader();
+    loader.load(asset, function (fbx) {
+        model = fbx;
         scene.add(model);
 
         model.traverse(function (object) {
@@ -67,7 +71,7 @@ export function init(asset) {
         skeleton.visible = false;
         scene.add(skeleton);
 
-        const animations = gltf.animations;
+        const animations = fbx.animations;
         mixer = new THREE.AnimationMixer(model);
 
         numAnimations = animations.length;
@@ -88,6 +92,7 @@ export function init(asset) {
         };
 
         animate();
+        changeAction(currentBaseAction);
     });
 
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
@@ -102,12 +107,12 @@ export function init(asset) {
         45,
         canvas.clientWidth / canvas.clientHeight,
         1,
-        100
+        4000
     );
-    camera.position.set(-1, 2, 5);
+    camera.position.set( 100, 300, 500 );
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 1, 0);
+    controls.target.set(10, 100, 100);
     controls.update();
 
 
@@ -335,50 +340,6 @@ function animate() {
 // Download function
 export function download() {
 
-    const gltfExporter = new GLTFExporter();
-
-    gltfExporter.parse(
-        scene.children,
-        function ( result ) {
-
-            if ( result instanceof ArrayBuffer ) {
-                saveArrayBuffer( result, 'scene.glb' );
-            } else {
-                const output = JSON.stringify( result, null, 2 );
-                console.log( output );
-                saveString( output, 'scene.glb' );
-            }
-        },
-        function ( error ) {
-            console.log( 'An error happened during parsing', error );
-        },
-        {binary: true}
-    );
-
-}
-
-const link = document.createElement( 'a' );
-link.style.display = 'none';
-document.body.appendChild( link ); // Firefox workaround, see #6594
-
-function save( blob, filename ) {
-
-    link.href = URL.createObjectURL( blob );
-    link.download = filename;
-    link.click();
-    // URL.revokeObjectURL( url ); breaks Firefox...
-
-}
-
-function saveString( text, filename ) {
-
-    save( new Blob( [ text ], { type: 'text/plain' } ), filename );
-
-}
-
-
-function saveArrayBuffer( buffer, filename ) {
-
-    save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+    return;
 
 }

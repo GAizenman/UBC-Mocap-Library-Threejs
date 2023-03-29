@@ -1,8 +1,10 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { changeAction } from "./loadCharacter.js";
 import { addAnimation, changeButtonToPause } from "./controlHandler.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 
 let canvas, renderer, clock, model, scroller;
@@ -27,10 +29,25 @@ export function init(asset) {
 async function loadActions(asset) {
     // console.log(asset)
     clock = new THREE.Clock();
+    const loader = new FBXLoader();
+    const fbx = await loader.loadAsync(asset);
+    animations = fbx.animations;
+    model = fbx;
+    console.log(fbx);
+
+    /*
+    clock = new THREE.Clock();
+    const loader = new FBXLoader();
+    const fbx = await loader.loadAsync(asset);
+    animations = fbx.animations;
+    model = fbx;
+
+    clock = new THREE.Clock();
     const loader = new GLTFLoader();
     const gltf = await loader.loadAsync(asset);
     animations = gltf.animations;
     model = gltf.scene;
+    */
 
     animations.forEach((anim) => {
         let modelclone = clone(model);
@@ -70,9 +87,10 @@ async function loadActions(asset) {
         scene.userData.element = sceneElement;
         content.appendChild(element);
 
-        const camera = new THREE.PerspectiveCamera(50, 1, 1, 10);
-        camera.position.y = 1;
-        camera.position.z = 3;
+        const camera = new THREE.PerspectiveCamera(50, 1, 1, 500);
+        camera.position.set( 50, 185, 250 );
+        camera.rotateX(-.35);
+        camera.rotateY(.2);
 
         scene.userData.camera = camera;
         scene.add(modelclone);
@@ -80,7 +98,7 @@ async function loadActions(asset) {
         scene.add(new THREE.HemisphereLight(0xaaaaaa, 0x444444));
 
         const light = new THREE.DirectionalLight(0xffffff, 0.5);
-        light.position.set(1, 1, 1);
+        light.position.set( 0, 200, 100 );
         scene.add(light);
 
         mixer.clipAction(anim).play();
@@ -149,6 +167,7 @@ function animate() {
         renderer.setScissor(left, bottom, width, height);
 
         const camera = scene.userData.camera;
+        
 
         renderer.render(scene, camera);
     });
