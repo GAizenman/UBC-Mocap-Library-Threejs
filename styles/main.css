@@ -422,11 +422,13 @@ input:checked + .dot:before {
 
 /* Style the image */
 .header img {
-  width: 150px;
+  width: 120px;
+  height: 50px;
   padding:5px; 
+  margin-top: 5px;
   float: left;
   margin-right: 40px;
-  margin-left: 40px;
+  margin-left: 50px;
 }
   
 /* Change the background color on mouse-over */
