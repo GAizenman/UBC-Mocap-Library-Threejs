@@ -13,19 +13,23 @@ let baseActions = {
     Idle: { weight: 1 }
 };
 
-let panelSettings, numAnimations;
-let singleStepMode = false;
-let sizeOfNextStep = 0;
+let numAnimations;
+let singleStepMode, flowChecker = false;
+let sizeOfNextStep, flowTracker = 0;
+let actionList = [];
 
 export function init(asset) {
     clock = new THREE.Clock();
 
+    // get canvas from html
     canvas = document.getElementById("canvas-right");
 
+    // create the scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xa0a0a0);
     scene.fog = new THREE.Fog(0xa0a0a0, 10, 50);
 
+    // add lights
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
     hemiLight.position.set(0, 20, 0);
     scene.add(hemiLight);
@@ -81,11 +85,6 @@ export function init(asset) {
             baseActions[name].action = action;
             allActions.push(action);
         }
-
-        panelSettings = {
-            "use default duration": true,
-            "set custom duration": 0.6,
-        };
 
         animate();
     });
@@ -159,9 +158,17 @@ export function toSingleStepMode(stepSize) {
 
 // function for onClick for selector page
 export function changeAction(name) {
+
     // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
     singleStepMode = false;
     unPauseAllActions();
+    
+    //set all weights to 0
+    allActions.forEach(function (action) {
+        setWeight(action, 0);
+   });
+
+    flowChecker = false;
 
     const startAction = baseActions[currentBaseAction].action;
     const endAction = baseActions[name].action;
@@ -178,14 +185,13 @@ export function changeAction(name) {
     }
 }
 
-function prepareCrossFade(startAction, endAction, defaultDuration) {
-    // Switch default / custom crossfade duration (according to the user's choice)
-    const duration = setCrossFadeDuration(defaultDuration);
+function prepareCrossFade(startAction, endAction, duration) {
 
     // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
     singleStepMode = false;
     unPauseAllActions();
 
+    console.log(currentBaseAction);
    
     synchronizeCrossFade(startAction, endAction, duration);
 
@@ -196,33 +202,22 @@ function prepareCrossFade(startAction, endAction, defaultDuration) {
     } else {
         currentBaseAction = "None";
     }
-
-    // crossFadeControls.forEach(function (control) {
-    //     const name = control.property;
-
-    //     if (name === currentBaseAction) {
-    //         control.setActive();
-    //     } else {
-    //         control.setInactive();
-    //     }
-    // });
 }
-function setCrossFadeDuration(defaultDuration) {
-    // Switch default crossfade duration <-> custom crossfade duration
-    if (panelSettings["use default duration"]) {
-        return defaultDuration;
-    } else {
-        return panelSettings["set custom duration"];
-    }
-}
+
 function synchronizeCrossFade(startAction, endAction, duration) {
+
+    mixer.removeEventListener("loop", onLoopFinished);
+    
     mixer.addEventListener("loop", onLoopFinished);
 
     function onLoopFinished(event) {
         if (event.action === startAction) {
             mixer.removeEventListener("loop", onLoopFinished);
 
-            executeCrossFade(startAction, endAction, duration);
+            if (flowChecker){
+                executeCrossFade(startAction, endAction, duration);
+                flowHelper();
+            }
         }
     }
 }
@@ -245,11 +240,14 @@ function executeCrossFade(startAction, endAction, duration) {
         // Fade out
         startAction.fadeOut(duration);
     }
+    
 }
 
 // function to run through animations in the list and blend them
-export function executeAnimationFlow(actionList, duration) {
+export function executeAnimationFlow(newActionList, duration) {
     
+    actionList = newActionList;
+
     // if nothing in the list, return
     if (actionList.length <= 0){
         return;
@@ -258,21 +256,25 @@ export function executeAnimationFlow(actionList, duration) {
     // change to the first action
     changeAction(actionList[0]);
 
-    for (let i = 1; i < actionList.length; i++){
+    // index tracker to 0 and checker to true
+    flowTracker = 0;
+    flowChecker = true;
 
-        const startAction = baseActions[actionList[i-1]].action;
-        const endAction = baseActions[actionList[i]].action;
+    flowHelper();
+    
+}
 
-        // Change the animation
-        prepareCrossFade(startAction, endAction, duration);
+// recursive flow helper function
+function flowHelper() {
 
-        // Update control colors
-        if (endAction) {
-            const clip = endAction.getClip();
-            currentBaseAction = clip.name;
-        } else {
-            currentBaseAction = "None";
-        }
+    //if there is a next in the list, cross fade and increment tracker
+    if (flowTracker < actionList.length - 1){
+        console.log(flowTracker);
+        const startAction = baseActions[actionList[flowTracker]].action;
+        const endAction = baseActions[actionList[flowTracker+1]].action;
+
+        flowTracker++;
+        prepareCrossFade(startAction, endAction, 0.6);
     }
     
 }
@@ -281,7 +283,7 @@ export function executeAnimationFlow(actionList, duration) {
 // the start action's timeScale to ((start animation's duration) / (end animation's duration))
 
 function setWeight(action, weight) {
-    action.enabled = true;
+    action.reset();
     action.setEffectiveTimeScale(1);
     action.setEffectiveWeight(weight);
 }
@@ -335,50 +337,6 @@ function animate() {
 // Download function
 export function download() {
 
-    const gltfExporter = new GLTFExporter();
-
-    gltfExporter.parse(
-        scene.children,
-        function ( result ) {
-
-            if ( result instanceof ArrayBuffer ) {
-                saveArrayBuffer( result, 'scene.glb' );
-            } else {
-                const output = JSON.stringify( result, null, 2 );
-                console.log( output );
-                saveString( output, 'scene.glb' );
-            }
-        },
-        function ( error ) {
-            console.log( 'An error happened during parsing', error );
-        },
-        {binary: true}
-    );
-
-}
-
-const link = document.createElement( 'a' );
-link.style.display = 'none';
-document.body.appendChild( link ); // Firefox workaround, see #6594
-
-function save( blob, filename ) {
-
-    link.href = URL.createObjectURL( blob );
-    link.download = filename;
-    link.click();
-    // URL.revokeObjectURL( url ); breaks Firefox...
-
-}
-
-function saveString( text, filename ) {
-
-    save( new Blob( [ text ], { type: 'text/plain' } ), filename );
-
-}
-
-
-function saveArrayBuffer( buffer, filename ) {
-
-    save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+    return;
 
 }
