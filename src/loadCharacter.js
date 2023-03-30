@@ -2,12 +2,11 @@ import * as THREE from "three";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
-let canvas, scene, renderer, camera, stats;
+let canvas, scene, renderer, camera;
 let model, skeleton, mixer, clock;
 
-let currentBaseAction = "Idle";
+let currentFlowAction, nextFlowAction;
 const allActions = [];
 let baseActions = {
     Idle: { weight: 1 }
@@ -169,78 +168,11 @@ export function changeAction(name) {
    });
 
     flowChecker = false;
-
-    const startAction = baseActions[currentBaseAction].action;
+    
     const endAction = baseActions[name].action;
 
     // Change the animation
-    executeCrossFade(startAction, endAction, 0);
-
-    // Update control colors
-    if (endAction) {
-        const clip = endAction.getClip();
-        currentBaseAction = clip.name;
-    } else {
-        currentBaseAction = "None";
-    }
-}
-
-function prepareCrossFade(startAction, endAction, duration) {
-
-    // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
-    singleStepMode = false;
-    unPauseAllActions();
-
-    console.log(currentBaseAction);
-   
-    synchronizeCrossFade(startAction, endAction, duration);
-
-    // Update control colors
-    if (endAction) {
-        const clip = endAction.getClip();
-        currentBaseAction = clip.name;
-    } else {
-        currentBaseAction = "None";
-    }
-}
-
-function synchronizeCrossFade(startAction, endAction, duration) {
-
-    mixer.removeEventListener("loop", onLoopFinished);
-    
-    mixer.addEventListener("loop", onLoopFinished);
-
-    function onLoopFinished(event) {
-        if (event.action === startAction) {
-            mixer.removeEventListener("loop", onLoopFinished);
-
-            if (flowChecker){
-                executeCrossFade(startAction, endAction, duration);
-                flowHelper();
-            }
-        }
-    }
-}
-
-function executeCrossFade(startAction, endAction, duration) {
-    // Not only the start action, but also the end action must get a weight of 1 before fading
-    // (concerning the start action this is already guaranteed in this place)
-    if (endAction) {
-        setWeight(endAction, 1);
-        endAction.time = 0;
-
-        if (startAction) {
-            // Crossfade with warping
-            startAction.crossFadeTo(endAction, duration, true);
-        } else {
-            // Fade in
-            endAction.fadeIn(duration);
-        }
-    } else {
-        // Fade out
-        startAction.fadeOut(duration);
-    }
-    
+    executeCrossFade(endAction, endAction, 0);
 }
 
 // function to run through animations in the list and blend them
@@ -266,17 +198,61 @@ export function executeAnimationFlow(newActionList, duration) {
 
 // recursive flow helper function
 function flowHelper() {
+    let duration = 0.6;
 
     //if there is a next in the list, cross fade and increment tracker
     if (flowTracker < actionList.length - 1){
-        console.log(flowTracker);
-        const startAction = baseActions[actionList[flowTracker]].action;
-        const endAction = baseActions[actionList[flowTracker+1]].action;
+        
+        // update what actions we are on
+        currentFlowAction = baseActions[actionList[flowTracker]].action;
+        nextFlowAction = baseActions[actionList[flowTracker+1]].action;
+        
+        // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
+        singleStepMode = false;
+        unPauseAllActions();
 
+        // increment flowTracker
         flowTracker++;
-        prepareCrossFade(startAction, endAction, 0.6);
+
+        synchronizeCrossFade(duration);
     }
     
+}
+
+function synchronizeCrossFade(duration) {
+    
+    mixer.addEventListener("loop", onLoopFinished);
+
+    function onLoopFinished(event) {
+        if (event.action === currentFlowAction) {
+            mixer.removeEventListener("loop", onLoopFinished);
+
+            if (flowChecker){
+                executeCrossFade(currentFlowAction, nextFlowAction, duration);
+                flowHelper();
+            }
+        }
+    }
+}
+
+function executeCrossFade(startAction, endAction, duration) {
+    // Not only the start action, but also the end action must get a weight of 1 before fading
+    // (concerning the start action this is already guaranteed in this place)
+    if (endAction) {
+        setWeight(endAction, 1);
+        endAction.time = 0;
+
+        if (startAction) {
+            // Crossfade with warping
+            startAction.crossFadeTo(endAction, duration, true);
+        } else {
+            // Fade in
+            endAction.fadeIn(duration);
+        }
+    } else {
+        // Fade out
+        startAction.fadeOut(duration);
+    }
 }
 
 // This function is needed, since animationAction.crossFadeTo() disables its start action and sets
