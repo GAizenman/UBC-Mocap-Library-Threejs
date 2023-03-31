@@ -45,7 +45,6 @@ export function init(asset) {
     scene.add(dirLight);
 
     // ground
-
     const mesh = new THREE.Mesh(
         new THREE.PlaneGeometry(100, 100),
         new THREE.MeshPhongMaterial({
