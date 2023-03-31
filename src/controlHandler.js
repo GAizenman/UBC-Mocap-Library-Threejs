@@ -1,7 +1,6 @@
 import { 
     showModel, showSkeleton, modifyTimeScale, executeAnimationFlow, 
-    unPauseAllActions, pauseAllActions, toSingleStepMode, getWeight,
-    download
+    unPauseAllActions, pauseAllActions, toSingleStepMode, download
 } from "./loadCharacter.js";
 
 
@@ -36,16 +35,6 @@ window.startFlow = () => {
     
     executeAnimationFlow(actionList, 0.6);
 };
-
-window.printWeights = () => {
-    let flowList = document.getElementsByClassName("flow-list-text");
-    let actionList = [];
-    for (let i = 0; i < flowList.length; i++) {
-        actionList.push(flowList[i].innerText);
-    }
-    
-    getWeight(actionList);
-}
 
 // function when download button is clicked
 window.downloader = () => {
@@ -99,6 +88,7 @@ window.pausePlayButtonClicked = () => {
     }
 };
 
+// helper functionto change the button to play
 export function changeButtonToPlay() {
     let imgSrc = document.getElementById("playButton");
     if (imgSrc.src.includes("/images/pauseIcon.png")) {
@@ -106,6 +96,7 @@ export function changeButtonToPlay() {
     }
 }
 
+// helper function to change the button to paused
 export function changeButtonToPause() {
     let imgSrc = document.getElementById("playButton");
     if (imgSrc.src.includes("/images/playIcon.png")) {

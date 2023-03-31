@@ -56,6 +56,7 @@ export function init(asset) {
     mesh.receiveShadow = true;
     scene.add(mesh);
 
+    // load in model and animations
     const loader = new GLTFLoader();
     loader.load(asset, function (gltf) {
         model = gltf.scene;
@@ -65,15 +66,18 @@ export function init(asset) {
             if (object.isMesh) object.castShadow = true;
         });
 
+        // create skeleton view
         skeleton = new THREE.SkeletonHelper(model);
         skeleton.visible = false;
         scene.add(skeleton);
 
+        // create mixer
         const animations = gltf.animations;
         mixer = new THREE.AnimationMixer(model);
 
         numAnimations = animations.length;
 
+        // activate actions and add them to baseActions
         for (let i = 0; i !== numAnimations; ++i) {
             let clip = animations[i];
             const name = clip.name;
@@ -87,6 +91,7 @@ export function init(asset) {
         animate();
     });
 
+    // create renderer
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 1);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -103,6 +108,7 @@ export function init(asset) {
     );
     camera.position.set(-1, 2, 5);
 
+    // orbit controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 1, 0);
     controls.update();
@@ -110,6 +116,7 @@ export function init(asset) {
 
 }
 
+// function to get action ready to play
 function activateAction(action) {
     const clip = action.getClip();
     if (!baseActions.hasOwnProperty(clip.name)) {
@@ -120,25 +127,29 @@ function activateAction(action) {
     action.play();
 }
 
+// function to show/hide the mesh
 export function showModel(visibility) {
     model.visible = visibility;
 }
 
+// function to show/hide the skeleton
 export function showSkeleton(visibility) {
     skeleton.visible = visibility;
 }
 
-// if speed is changed, change the time scale
+// function to change speed
 export function modifyTimeScale(speed) {
     mixer.timeScale = speed;
 }
 
+// function to pause button
 export function pauseAllActions() {
     allActions.forEach(function (action) {
         action.paused = true;
     });
 }
 
+// function for play button
 export function unPauseAllActions() {
     singleStepMode = false;
     allActions.forEach(function (action) {
@@ -157,20 +168,20 @@ export function toSingleStepMode(stepSize) {
 // function for onClick for selector page
 export function changeAction(name) {
 
-    // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
+    // disable single step mode and unpause actions
     singleStepMode = false;
     unPauseAllActions();
     
-    //set all weights to 0
+    //set all animation weights to 0
     allActions.forEach(function (action) {
         setWeight(action, 0);
    });
 
+   // disable animation flow
     flowChecker = false;
-    
-    const endAction = baseActions[name].action;
 
-    // Change the animation
+    // Change the animation to selected action
+    const endAction = baseActions[name].action;
     executeCrossFade(endAction, endAction, 0);
 }
 
@@ -178,6 +189,7 @@ export function changeAction(name) {
 export function executeAnimationFlow(newActionList, duration) {
     
     actionList = newActionList;
+    singleStepMode = false;
 
     // if nothing in the list, return
     if (actionList.length <= 0){
@@ -195,7 +207,7 @@ export function executeAnimationFlow(newActionList, duration) {
     
 }
 
-// recursive flow helper function
+// flow helper function to iterate through animations
 function flowHelper() {
     let duration = 0.6;
 
@@ -205,14 +217,11 @@ function flowHelper() {
         // update what actions we are on
         currentFlowAction = baseActions[actionList[flowTracker]].action;
         nextFlowAction = baseActions[actionList[flowTracker+1]].action;
-        
-        // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
-        singleStepMode = false;
-        unPauseAllActions();
 
         // increment flowTracker
         flowTracker++;
 
+        unPauseAllActions();
         synchronizeCrossFade(duration);
     }
     
@@ -220,8 +229,11 @@ function flowHelper() {
 
 function synchronizeCrossFade(duration) {
     
+    // create event listener for 1 full loop of the animation
     mixer.addEventListener("loop", onLoopFinished);
 
+    // when event triggered, remove listener and crossfade.
+    // then go to next iteration of the flow list
     function onLoopFinished(event) {
         if (event.action === currentFlowAction) {
             mixer.removeEventListener("loop", onLoopFinished);
@@ -256,19 +268,13 @@ function executeCrossFade(startAction, endAction, duration) {
 
 // This function is needed, since animationAction.crossFadeTo() disables its start action and sets
 // the start action's timeScale to ((start animation's duration) / (end animation's duration))
-
 function setWeight(action, weight) {
     action.reset();
     action.setEffectiveTimeScale(1);
     action.setEffectiveWeight(weight);
 }
 
-export function getWeight(actionList) {
-    actionList.forEach(function(action1) {
-        console.log( baseActions[action1].action.getEffectiveWeight(), ", ", action1);
-    });
-}
-
+// window resizer function
 function updateSize() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;

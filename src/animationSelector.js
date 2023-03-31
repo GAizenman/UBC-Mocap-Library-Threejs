@@ -12,8 +12,11 @@ const mixers = [];
 let animations;
 
 export function init(asset) {
+
+    // load in all the animations
     loadActions(asset);
 
+    // get elements from HTML
     canvas = document.getElementById("canvas-left");
     scroller = document.getElementById("selector-side");
 
@@ -25,21 +28,25 @@ export function init(asset) {
     animate();
 }
 async function loadActions(asset) {
-    // console.log(asset)
+
+    // load in models and scene
     clock = new THREE.Clock();
     const loader = new GLTFLoader();
     const gltf = await loader.loadAsync(asset);
     animations = gltf.animations;
     model = gltf.scene;
 
+    //create a separate element for each animation
     animations.forEach((anim) => {
+        // clone model and create scene
         let modelclone = clone(model);
 
         const scene = new THREE.Scene();
         const mixer = new THREE.AnimationMixer(modelclone);
 
         const content = document.getElementById("content");
-        // make a list item
+
+        // make a list item dom element
         const element = document.createElement("div");
         element.className = "list-item";
 
@@ -53,13 +60,13 @@ async function loadActions(asset) {
         descriptionElement.innerText = anim.name;
         element.appendChild(descriptionElement);
 
-        
-
         element.addEventListener("click", function(e) {
             var sender = e.target.tagName.toLowerCase();
+            // if + button clicked, add animation to flow
             if(sender === "button") {
                 addAnimation(anim.name);
             }
+            // otherwise, play the action clicked in loadCharacter
             else {
                 changeButtonToPause();
                 changeAction(anim.name);
@@ -70,6 +77,7 @@ async function loadActions(asset) {
         scene.userData.element = sceneElement;
         content.appendChild(element);
 
+        // create camera
         const camera = new THREE.PerspectiveCamera(50, 1, 1, 10);
         camera.position.y = 1;
         camera.position.z = 3;
@@ -77,18 +85,21 @@ async function loadActions(asset) {
         scene.userData.camera = camera;
         scene.add(modelclone);
 
+        // create scene lights
         scene.add(new THREE.HemisphereLight(0xaaaaaa, 0x444444));
 
         const light = new THREE.DirectionalLight(0xffffff, 0.5);
         light.position.set(1, 1, 1);
         scene.add(light);
 
+        // play the animation in the list item
         mixer.clipAction(anim).play();
         mixers.push(mixer);
         scenes.push(scene);
     });
 }
 
+// window resizer
 function updateSize() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
@@ -98,7 +109,9 @@ function updateSize() {
     }
 }
 
+// function to animate
 function animate() {
+
     requestAnimationFrame(animate);
     updateSize();
 
@@ -130,7 +143,7 @@ function animate() {
         //make adjustments for header height
         if (
             rect.bottom < 0 ||
-            //change 61 if header size changes
+            //change andded pixels if header size changes
             rect.top > renderer.domElement.clientHeight + 111 ||
             rect.right < 0 ||
             rect.left > renderer.domElement.clientWidth
@@ -142,7 +155,8 @@ function animate() {
         const width = rect.right - rect.left;
         const height = rect.bottom - rect.top;
         const left = rect.left;
-        //change 61 if header size changes
+        
+        //change added pixels if header size changes
         const bottom = renderer.domElement.clientHeight - rect.bottom + 111;
 
         renderer.setViewport(left, bottom, width, height);

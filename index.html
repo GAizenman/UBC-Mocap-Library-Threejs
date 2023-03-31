@@ -41,11 +41,11 @@
             <a>Animation Studio</a>
         </div>
         
-
+        <!-- split content sections -->
         <!-- Reference: https://redstapler.co/split-js-tutorial-website-split-screen-effect/-->
         <div class="split-content">
 
-            <!-- Left Side Selector -->
+            <!-- Left Animation Side Selector -->
             <div class="a" id="selector-side">
                 <canvas id="canvas-left"></canvas>
                 <div id="content"></div>
@@ -53,14 +53,14 @@
                 <script type="module" src="./index.js"></script>
             </div>
             
-            <!-- animation middle part -->
+            <!-- load character middle part -->
             <div class="b">
                 <canvas id="canvas-right"></canvas>
                 
                 <script type="module" src="./index2.js"></script>
             </div>
 
-            <!-- GUI part -->
+            <!-- Right GUI part -->
             <div class="c">
                 <script type="module" src="./src/controlHandler.js"></script>
                 <div class="gui-title">
@@ -123,6 +123,7 @@
            
         </div>
 
+        <!-- split pane script -->
         <script>
             Split(['.a', '.b', '.c'], {
                 gutterSize: 5,
