@@ -80,6 +80,7 @@ body {
   position: relative;
   height: 100%;
   left: 0px;
+  background-color: #313338;
   overflow-x: hidden;
   overflow-y: auto;
 }
