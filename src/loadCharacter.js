@@ -211,8 +211,22 @@ export function executeAnimationFlow(newActionList, duration) {
 function flowHelper() {
     let duration = 0.6;
 
+    //if past the last in the list, loop to the begining
+    if (flowTracker == actionList.length - 1){
+
+        // update what actions we are on
+        currentFlowAction = baseActions[actionList[flowTracker]].action;
+        nextFlowAction = baseActions[actionList[0]].action;
+
+        // set flowTracker
+        flowTracker = 0;
+
+        unPauseAllActions();
+        synchronizeCrossFade(duration);
+    }
+
     //if there is a next in the list, cross fade and increment tracker
-    if (flowTracker < actionList.length - 1){
+    else if (flowTracker < actionList.length - 1){
         
         // update what actions we are on
         currentFlowAction = baseActions[actionList[flowTracker]].action;
