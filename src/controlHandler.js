@@ -1,10 +1,9 @@
 import { 
     showModel, showSkeleton, modifyTimeScale, executeAnimationFlow, 
-    unPauseAllActions, pauseAllActions, toSingleStepMode, getWeight,
-    download
+    unPauseAllActions, pauseAllActions, toSingleStepMode, download
 } from "./loadCharacter.js";
 
-const animationList = [];
+
 
 // if the show model is toggled
 window.showModelClicked = () => {
@@ -27,6 +26,7 @@ window.speedRangeChanged = () => {
 
 // function to start playing animations through the list
 window.startFlow = () => {
+    changeButtonToPause();
     let flowList = document.getElementsByClassName("flow-list-text");
     let actionList = [];
     for (let i = 0; i < flowList.length; i++) {
@@ -35,15 +35,6 @@ window.startFlow = () => {
     
     executeAnimationFlow(actionList, 0.6);
 };
-
-window.printWeights = () => {
-    let actionList = [];
-    for (let i = 0; i < animationList.length; i++) {
-        actionList.push(animationList[i][1]);
-    }
-    
-    getWeight(actionList);
-}
 
 // function when download button is clicked
 window.downloader = () => {
@@ -85,9 +76,33 @@ window.pause = () => {
 };
 
 // function to play actions
-window.play = () => {
-    unPauseAllActions();
+window.pausePlayButtonClicked = () => {
+    let imgSrc = document.getElementById("playButton");
+    if (imgSrc.src.includes("/images/playIcon.png")) {
+        imgSrc.src = "./images/pauseIcon.png";
+        unPauseAllActions();
+    }
+    else {
+        imgSrc.src = "./images/playIcon.png";
+        pauseAllActions();
+    }
 };
+
+// helper functionto change the button to play
+export function changeButtonToPlay() {
+    let imgSrc = document.getElementById("playButton");
+    if (imgSrc.src.includes("/images/pauseIcon.png")) {
+        imgSrc.src = "./images/playIcon.png";
+    }
+}
+
+// helper function to change the button to paused
+export function changeButtonToPause() {
+    let imgSrc = document.getElementById("playButton");
+    if (imgSrc.src.includes("/images/playIcon.png")) {
+        imgSrc.src = "./images/pauseIcon.png";
+    }
+}
 
 // if step amount is changed, change the text
 window.stepAmountChanged = () => {
@@ -97,13 +112,12 @@ window.stepAmountChanged = () => {
 
 // function to play single step
 window.doSingleStep = () => {
+    changeButtonToPlay();
     toSingleStepMode(document.getElementById("stepRange").value);
 };
 
 // function to keep track of the list of animations in the flow
 export function addAnimation(animationName) {
-    const listInput = [animationList.length, animationName];
-    animationList.push(listInput);
 
     const content = document.getElementById("animation-list");
     // make a list item
@@ -116,7 +130,6 @@ export function addAnimation(animationName) {
     removeButton.setAttribute("width", "15");
     removeButton.setAttribute("height", "15");
     removeButton.addEventListener("click", () => {
-        removeAnimation(listInput);
         element.remove();
     });
 
@@ -131,21 +144,3 @@ export function addAnimation(animationName) {
     content.appendChild(element);
 };
 
-// helper function to remove an animation from the flow list
-function removeAnimation(animationRem) {
-
-    //if it is the last animation, just pop
-    if (animationRem[0] == animationList.length-1) {
-        animationList.pop();
-    }
-
-    else{
-        let ind = animationRem[0];
-        while (ind < animationList.length-1) {
-            animationList[ind][1] = animationList[ind+1][1];
-            ind++;
-        }
-        
-        animationList.pop();
-    }
-}

@@ -36,37 +36,38 @@
 
         <!-- header2 placeholder section, change numbers in animationSelector to 105 when you add this-->
         <div class="header2" id="search-header">
+            <input type="search" id="site-search" name="searchBar" placeholder="Search…">
+            <img src="./images/searchIcon.png" style="width:18px;" onclick="" />
             <a>Animation Studio</a>
         </div>
         
-
+        <!-- split content sections -->
         <!-- Reference: https://redstapler.co/split-js-tutorial-website-split-screen-effect/-->
         <div class="split-content">
 
-            <!-- Left Side Selector -->
+            <!-- Left Animation Side Selector -->
             <div class="a" id="selector-side">
                 <canvas id="canvas-left"></canvas>
                 <div id="content"></div>
     
-                <script type="module" src="./index.js"></script>
+                <script type="module" src="./selectCaller.js"></script>
             </div>
             
-            <!-- animation middle part -->
+            <!-- load character middle part -->
             <div class="b">
                 <canvas id="canvas-right"></canvas>
                 
-                <script type="module" src="./index2.js"></script>
+                <script type="module" src="./characterCaller.js"></script>
             </div>
 
-            <!-- GUI part -->
+            <!-- Right GUI part -->
             <div class="c">
                 <script type="module" src="./src/controlHandler.js"></script>
                 <div class="gui-title">
                     Controls
-                    <img src="./images/downloadIcon.png" style="width:22px;" onclick="downloader()" />
                 </div>
 
-                <div class="gui-section">
+                <div class="gui-section" style="animation-name: none;">
 
                     <!-- Visibility section -->
                     <h2 style="margin-bottom: 10px;">Visibility:</h2>
@@ -96,33 +97,39 @@
                     </div>
                     <button class="check-button" onclick="doSingleStep()">Single Step</button>
                     <br><br><br>
-                    <div class="gui-section-play"><img src="./images/playIcon.png" style="width:30px;" onclick="play()" /></div>
-                    <div class="gui-section-play"><img src="./images/pauseIcon.png" style="width:30px;" onclick="pause()" /></div>
+                    <div class="gui-section-play">
+                        <img id="playButton" src="./images/pauseIcon.png" style="width:30px;" onclick="pausePlayButtonClicked()" />
+                        <g><img src="./images/downloadIcon.png" style="width:22px;" onclick="downloader()" /></g>
+                    </div>
                 </div>
 
                 <!-- Animation List section -->
-                <div class="gui-title">
-                    Animation Flow<br>
-                </div>
-                <div class="flow">
-                    <button class="check-button" style="margin-left: 5px;" onclick="startFlow()">Play Flow</button>
-                    <br>
-                    <h2>Animation Sequence:</h2>
-                </div>
-                
-                <div id="animation-list">
+                <div class="flow-list">
+                    <div class="gui-title">
+                        Animation Flow<br>
+                    </div>
+                    <div class="flow">
+                        <button class="check-button" style="margin-left: 5px;" onclick="startFlow()">Play Flow</button>
+                        <br>
+                        <h2>Animation Sequence:</h2>
+                    </div>
                     
+                    <div id="animation-list">
+                        
+                    </div>
                 </div>
             </div>
 
            
         </div>
 
+        <!-- split pane script -->
         <script>
             Split(['.a', '.b', '.c'], {
                 gutterSize: 5,
                 sizes: [36,49,15],
-                minSize: [250,300,220]
+                minSize: [250,300,220],
+                maxSize: [750, 1500, 275]
             });
         </script>
 
@@ -144,21 +151,22 @@
                     <p1>Format:</p1>
                     <br>
                     <select name="format" id="format">
-                        <option value="glb">.glb (binary)</option>
-                        <option value="gltf">.gltf (JSON)</option>
+                        <option value="fbx">.fbx</option>
                     </select>
                     <br><br><br>
                     <p1>Frames Per Second:</p1>
                     <br>
                     <select name="fps" id="fps">
                         <option value="30">30 fps</option>
+                        <option value="60">60 fps</option>
                     </select>
                 </div>
                 <div class="popup-content-right">
                     <p1>Model:</p1>
                     <br>
                     <select name="model" id="model">
-                        <option value="with-model">With Model</option>
+                        <option value="with-model">With Mesh</option>
+                        <option value="with-model">Without Mesh</option>
                     </select>
                     <br><br><br>
                     <p1>Key Frame Reduction:</p1>

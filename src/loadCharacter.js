@@ -2,30 +2,33 @@ import * as THREE from "three";
 
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
-let canvas, scene, renderer, camera, stats;
+let canvas, scene, renderer, camera;
 let model, skeleton, mixer, clock;
 
-let currentBaseAction = "Idle";
+let currentFlowAction, nextFlowAction;
 const allActions = [];
 let baseActions = {
     Idle: { weight: 1 }
 };
 
-let panelSettings, numAnimations;
-let singleStepMode = false;
-let sizeOfNextStep = 0;
+let numAnimations;
+let singleStepMode, flowChecker = false;
+let sizeOfNextStep, flowTracker = 0;
+let actionList = [];
 
 export function init(asset) {
     clock = new THREE.Clock();
 
+    // get canvas from html
     canvas = document.getElementById("canvas-right");
 
+    // create the scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xa0a0a0);
     scene.fog = new THREE.Fog(0xa0a0a0, 10, 50);
 
+    // add lights
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
     hemiLight.position.set(0, 20, 0);
     scene.add(hemiLight);
@@ -42,7 +45,6 @@ export function init(asset) {
     scene.add(dirLight);
 
     // ground
-
     const mesh = new THREE.Mesh(
         new THREE.PlaneGeometry(100, 100),
         new THREE.MeshPhongMaterial({
@@ -54,6 +56,7 @@ export function init(asset) {
     mesh.receiveShadow = true;
     scene.add(mesh);
 
+    // load in model and animations
     const loader = new GLTFLoader();
     loader.load(asset, function (gltf) {
         model = gltf.scene;
@@ -63,15 +66,18 @@ export function init(asset) {
             if (object.isMesh) object.castShadow = true;
         });
 
+        // create skeleton view
         skeleton = new THREE.SkeletonHelper(model);
         skeleton.visible = false;
         scene.add(skeleton);
 
+        // create mixer
         const animations = gltf.animations;
         mixer = new THREE.AnimationMixer(model);
 
         numAnimations = animations.length;
 
+        // activate actions and add them to baseActions
         for (let i = 0; i !== numAnimations; ++i) {
             let clip = animations[i];
             const name = clip.name;
@@ -82,14 +88,10 @@ export function init(asset) {
             allActions.push(action);
         }
 
-        panelSettings = {
-            "use default duration": true,
-            "set custom duration": 0.6,
-        };
-
         animate();
     });
 
+    // create renderer
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
     renderer.setClearColor(0xffffff, 1);
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -106,6 +108,7 @@ export function init(asset) {
     );
     camera.position.set(-1, 2, 5);
 
+    // orbit controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.target.set(0, 1, 0);
     controls.update();
@@ -113,6 +116,7 @@ export function init(asset) {
 
 }
 
+// function to get action ready to play
 function activateAction(action) {
     const clip = action.getClip();
     if (!baseActions.hasOwnProperty(clip.name)) {
@@ -123,25 +127,29 @@ function activateAction(action) {
     action.play();
 }
 
+// function to show/hide the mesh
 export function showModel(visibility) {
     model.visible = visibility;
 }
 
+// function to show/hide the skeleton
 export function showSkeleton(visibility) {
     skeleton.visible = visibility;
 }
 
-// if speed is changed, change the time scale
+// function to change speed
 export function modifyTimeScale(speed) {
     mixer.timeScale = speed;
 }
 
+// function to pause button
 export function pauseAllActions() {
     allActions.forEach(function (action) {
         action.paused = true;
     });
 }
 
+// function for play button
 export function unPauseAllActions() {
     singleStepMode = false;
     allActions.forEach(function (action) {
@@ -159,70 +167,95 @@ export function toSingleStepMode(stepSize) {
 
 // function for onClick for selector page
 export function changeAction(name) {
-    // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
+
+    // disable single step mode and unpause actions
     singleStepMode = false;
     unPauseAllActions();
+    
+    //set all animation weights to 0
+    allActions.forEach(function (action) {
+        setWeight(action, 0);
+   });
 
-    const startAction = baseActions[currentBaseAction].action;
+   // disable animation flow
+    flowChecker = false;
+
+    // Change the animation to selected action
     const endAction = baseActions[name].action;
-
-    // Change the animation
-    executeCrossFade(startAction, endAction, 0);
-
-    // Update control colors
-    if (endAction) {
-        const clip = endAction.getClip();
-        currentBaseAction = clip.name;
-    } else {
-        currentBaseAction = "None";
-    }
+    executeCrossFade(endAction, endAction, 0);
 }
 
-function prepareCrossFade(startAction, endAction, defaultDuration) {
-    // Switch default / custom crossfade duration (according to the user's choice)
-    const duration = setCrossFadeDuration(defaultDuration);
-
-    // Make sure that we don't go on in singleStepMode, and that all actions are unpaused
+// function to run through animations in the list and blend them
+export function executeAnimationFlow(newActionList, duration) {
+    
+    actionList = newActionList;
     singleStepMode = false;
-    unPauseAllActions();
 
-   
-    synchronizeCrossFade(startAction, endAction, duration);
-
-    // Update control colors
-    if (endAction) {
-        const clip = endAction.getClip();
-        currentBaseAction = clip.name;
-    } else {
-        currentBaseAction = "None";
+    // if nothing in the list, return
+    if (actionList.length <= 0){
+        return;
     }
 
-    // crossFadeControls.forEach(function (control) {
-    //     const name = control.property;
+    // change to the first action
+    changeAction(actionList[0]);
 
-    //     if (name === currentBaseAction) {
-    //         control.setActive();
-    //     } else {
-    //         control.setInactive();
-    //     }
-    // });
+    // index tracker to 0 and checker to true
+    flowTracker = 0;
+    flowChecker = true;
+
+    flowHelper();
+    
 }
-function setCrossFadeDuration(defaultDuration) {
-    // Switch default crossfade duration <-> custom crossfade duration
-    if (panelSettings["use default duration"]) {
-        return defaultDuration;
-    } else {
-        return panelSettings["set custom duration"];
+
+// flow helper function to iterate through animations
+function flowHelper() {
+    let duration = 0.6;
+
+    //if past the last in the list, loop to the begining
+    if (flowTracker == actionList.length - 1){
+
+        // update what actions we are on
+        currentFlowAction = baseActions[actionList[flowTracker]].action;
+        nextFlowAction = baseActions[actionList[0]].action;
+
+        // set flowTracker
+        flowTracker = 0;
+
+        unPauseAllActions();
+        synchronizeCrossFade(duration);
     }
+
+    //if there is a next in the list, cross fade and increment tracker
+    else if (flowTracker < actionList.length - 1){
+        
+        // update what actions we are on
+        currentFlowAction = baseActions[actionList[flowTracker]].action;
+        nextFlowAction = baseActions[actionList[flowTracker+1]].action;
+
+        // increment flowTracker
+        flowTracker++;
+
+        unPauseAllActions();
+        synchronizeCrossFade(duration);
+    }
+    
 }
-function synchronizeCrossFade(startAction, endAction, duration) {
+
+function synchronizeCrossFade(duration) {
+    
+    // create event listener for 1 full loop of the animation
     mixer.addEventListener("loop", onLoopFinished);
 
+    // when event triggered, remove listener and crossfade.
+    // then go to next iteration of the flow list
     function onLoopFinished(event) {
-        if (event.action === startAction) {
+        if (event.action === currentFlowAction) {
             mixer.removeEventListener("loop", onLoopFinished);
 
-            executeCrossFade(startAction, endAction, duration);
+            if (flowChecker){
+                executeCrossFade(currentFlowAction, nextFlowAction, duration);
+                flowHelper();
+            }
         }
     }
 }
@@ -247,51 +280,15 @@ function executeCrossFade(startAction, endAction, duration) {
     }
 }
 
-// function to run through animations in the list and blend them
-export function executeAnimationFlow(actionList, duration) {
-    
-    // if nothing in the list, return
-    if (actionList.length <= 0){
-        return;
-    }
-
-    // change to the first action
-    changeAction(actionList[0]);
-
-    for (let i = 1; i < actionList.length; i++){
-
-        const startAction = baseActions[currentBaseAction].action;
-        const endAction = baseActions[actionList[i]].action;
-
-        // Change the animation
-        prepareCrossFade(startAction, endAction, duration);
-
-        // Update control colors
-        if (endAction) {
-            const clip = endAction.getClip();
-            currentBaseAction = clip.name;
-        } else {
-            currentBaseAction = "None";
-        }
-    }
-    
-}
-
 // This function is needed, since animationAction.crossFadeTo() disables its start action and sets
 // the start action's timeScale to ((start animation's duration) / (end animation's duration))
-
 function setWeight(action, weight) {
-    action.enabled = true;
+    action.reset();
     action.setEffectiveTimeScale(1);
     action.setEffectiveWeight(weight);
 }
 
-export function getWeight(actionList) {
-    actionList.forEach(function(action1) {
-        console.log( baseActions[action1].action.getEffectiveWeight(), ", ", action1);
-    });
-}
-
+// window resizer function
 function updateSize() {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
@@ -335,50 +332,6 @@ function animate() {
 // Download function
 export function download() {
 
-    const gltfExporter = new GLTFExporter();
-
-    gltfExporter.parse(
-        scene.children,
-        function ( result ) {
-
-            if ( result instanceof ArrayBuffer ) {
-                saveArrayBuffer( result, 'scene.glb' );
-            } else {
-                const output = JSON.stringify( result, null, 2 );
-                console.log( output );
-                saveString( output, 'scene.glb' );
-            }
-        },
-        function ( error ) {
-            console.log( 'An error happened during parsing', error );
-        },
-        {binary: true}
-    );
-
-}
-
-const link = document.createElement( 'a' );
-link.style.display = 'none';
-document.body.appendChild( link ); // Firefox workaround, see #6594
-
-function save( blob, filename ) {
-
-    link.href = URL.createObjectURL( blob );
-    link.download = filename;
-    link.click();
-    // URL.revokeObjectURL( url ); breaks Firefox...
-
-}
-
-function saveString( text, filename ) {
-
-    save( new Blob( [ text ], { type: 'text/plain' } ), filename );
-
-}
-
-
-function saveArrayBuffer( buffer, filename ) {
-
-    save( new Blob( [ buffer ], { type: 'application/octet-stream' } ), filename );
+    return;
 
 }
